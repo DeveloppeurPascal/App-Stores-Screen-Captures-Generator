@@ -1,0 +1,121 @@
+object frmOptions: TfrmOptions
+  Left = 0
+  Top = 0
+  Caption = 'R'#233'glages'
+  ClientHeight = 192
+  ClientWidth = 330
+  Position = MainFormCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object lFooter: TLayout
+    Align = Bottom
+    Position.Y = 142.000000000000000000
+    Size.Width = 330.000000000000000000
+    Size.Height = 50.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object btnOk: TButton
+      Align = Right
+      Default = True
+      ModalResult = 1
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Position.X = 155.000000000000000000
+      Position.Y = 5.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 40.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'Ok'
+      TextSettings.Trimming = None
+      OnClick = btnOkClick
+    end
+    object btnCancel: TButton
+      Align = Right
+      Cancel = True
+      ModalResult = 2
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Position.X = 245.000000000000000000
+      Position.Y = 5.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 40.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Cancel'
+      TextSettings.Trimming = None
+    end
+  end
+  object VertScrollBox1: TVertScrollBox
+    Align = Client
+    Size.Width = 330.000000000000000000
+    Size.Height = 142.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Viewport.Width = 330.000000000000000000
+    Viewport.Height = 142.000000000000000000
+    object gpAppTheme: TGroupBox
+      Align = Top
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Position.X = 5.000000000000000000
+      Position.Y = 5.000000000000000000
+      Size.Width = 320.000000000000000000
+      Size.Height = 108.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'Mode d'#39'affichage'
+      TabOrder = 0
+      object rbLightStyle: TRadioButton
+        Align = Bottom
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 5.000000000000000000
+        Position.Y = 26.000000000000000000
+        Size.Width = 310.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 36
+        Text = 'th'#232'me clair'
+      end
+      object rbDarkStyle: TRadioButton
+        Align = Bottom
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 5.000000000000000000
+        Position.Y = 55.000000000000000000
+        Size.Width = 310.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 38
+        Text = 'th'#232'me sombre'
+      end
+      object rbAutomaticStyle: TRadioButton
+        Align = Bottom
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 5.000000000000000000
+        Position.Y = 84.000000000000000000
+        Size.Width = 310.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 39
+        Text = 'automatique'
+      end
+    end
+  end
+end

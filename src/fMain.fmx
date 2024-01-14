@@ -1,0 +1,104 @@
+object frmMain: TfrmMain
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 480
+  ClientWidth = 640
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  DesignerMasterStyle = 0
+  object MainMenu1: TMainMenu
+    Left = 184
+    Top = 192
+    object mnuSystemMacOS: TMenuItem
+      Text = 'mnuSystemMacOS'
+    end
+    object mnuFichier: TMenuItem
+      Text = '&Fichier'
+      object mnuFichierOuvrir: TMenuItem
+        Locked = True
+        ShortCut = 16506
+        Text = '&Ouvrir'
+        OnClick = mnuFichierOuvrirClick
+      end
+      object mnuFichierNouveau: TMenuItem
+        Locked = True
+        Text = '&Nouveau'
+        OnClick = mnuFichierNouveauClick
+      end
+      object mnuFichierEnregistrer: TMenuItem
+        Locked = True
+        ShortCut = 16467
+        Text = '&Enregistrer'
+        OnClick = mnuFichierEnregistrerClick
+      end
+      object mnuFichierFermer: TMenuItem
+        Locked = True
+        Text = '&Fermer'
+        OnClick = mnuFichierFermerClick
+      end
+      object mnuFichierQuitter: TMenuItem
+        Locked = True
+        Text = '&Quitter'
+        OnClick = mnuFichierQuitterClick
+      end
+    end
+    object mnuOutils: TMenuItem
+      Text = '&Outils'
+      object mnuOutilsOptions: TMenuItem
+        Locked = True
+        Text = '&Options'
+        OnClick = mnuOutilsOptionsClick
+      end
+    end
+    object mnuAide: TMenuItem
+      Text = '&Aide'
+      object mnuAideAPropos: TMenuItem
+        Locked = True
+        Text = '&A propos'
+        OnClick = mnuAideAProposClick
+      end
+    end
+  end
+  object OlfAboutDialog1: TOlfAboutDialog
+    Titre = 'App Stores Screen Captures Generator'
+    VersionNumero = '1.0'
+    VersionDate = '20240114'
+    MultiResBitmap = <
+      item
+      end>
+    Images = dmAppIcon.imgAppIcon
+    ImageIndex = 0
+    URL = 'https://appstoresscreencapturesgenerator.olfsoftware.fr/'
+    Licence.Strings = (
+      
+        'Ce logiciel est fourni tel quel, avec peut-'#234'tre des bogues ou sa' +
+        'ns. Aucune garantie sur son fonctionnement ni sur les donn'#233'es tr' +
+        'ait'#233'es n'#39'est propos'#233'e. Faites des backups !'
+      ''
+      
+        'C'#39'est un programme distribu'#233' en shareware. Si vous l'#39'utilisez (s' +
+        'urtout dans le cadre d'#39'une activit'#233' commerciale ou r'#233'mun'#233'ratrice' +
+        '), merci de ne pas oublier l'#39'auteur et de contribuer '#224' son d'#233'vel' +
+        'oppement par l'#39'achat d'#39'une licence.'
+      ''
+      
+        'This software is supplied as is, with or without bugs. No warran' +
+        'ty is offered as to its operation or the data processed. Make ba' +
+        'ckups!'
+      ''
+      
+        'This program is distributed as shareware. If you use it (especia' +
+        'lly for commercial or income-generating purposes), please rememb' +
+        'er the author and contribute to its development by purchasing a ' +
+        'license.')
+    onURLClick = OlfAboutDialog1URLClick
+    Langue = FR
+    Left = 312
+    Top = 232
+  end
+end
