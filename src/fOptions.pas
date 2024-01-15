@@ -15,7 +15,8 @@ uses
   FMX.Dialogs,
   FMX.Controls.Presentation,
   FMX.StdCtrls,
-  FMX.Layouts;
+  FMX.Layouts,
+  FMX.ListBox;
 
 type
   TfrmOptions = class(TForm)
@@ -27,6 +28,8 @@ type
     rbLightStyle: TRadioButton;
     rbAutomaticStyle: TRadioButton;
     rbDarkStyle: TRadioButton;
+    lblLanguage: TLabel;
+    cbLanguage: TComboBox;
     procedure btnOkClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
   private
@@ -45,8 +48,6 @@ uses
 
 procedure TfrmOptions.btnOkClick(Sender: TObject);
 begin
-  // TODO : remplir TConfig à partir des infos saisies
-
   if rbLightStyle.IsChecked then
     tconfig.AppStyle := TAppTheme.light
   else if rbDarkStyle.IsChecked then
@@ -54,15 +55,37 @@ begin
   else if rbAutomaticStyle.IsChecked then
     tconfig.AppStyle := TAppTheme.auto;
 
+  case cbLanguage.ItemIndex of
+    // TODO : à rendre indépendant des index de la liste
+    0:
+      tconfig.AppLangue := TAppLangue.Anglais;
+    1:
+      tconfig.AppLangue := TAppLangue.Francais;
+    2:
+      tconfig.AppLangue := TAppLangue.Inconnu;
+  end;
+
   tparams.save;
 end;
 
 procedure TfrmOptions.FormCreate(Sender: TObject);
 begin
   case tconfig.AppStyle of
-  TAppTheme.auto:rbAutomaticStyle.IsChecked:=true;
-    TAppTheme.light:rbLightStyle.IsChecked:=true;
-      TAppTheme.dark:rbDarkStyle.IsChecked:=true;
+    TAppTheme.auto:
+      rbAutomaticStyle.IsChecked := true;
+    TAppTheme.light:
+      rbLightStyle.IsChecked := true;
+    TAppTheme.dark:
+      rbDarkStyle.IsChecked := true;
+  end;
+
+  case tconfig.AppLangue of // TODO : à rendre indépendant des index de la liste
+    TAppLangue.Anglais:
+      cbLanguage.ItemIndex := 0;
+    TAppLangue.Francais:
+      cbLanguage.ItemIndex := 1;
+    TAppLangue.Inconnu:
+      cbLanguage.ItemIndex := 2;
   end;
 end;
 

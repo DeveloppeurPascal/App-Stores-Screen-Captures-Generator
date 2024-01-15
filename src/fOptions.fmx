@@ -2,7 +2,7 @@ object frmOptions: TfrmOptions
   Left = 0
   Top = 0
   Caption = 'R'#233'glages'
-  ClientHeight = 192
+  ClientHeight = 214
   ClientWidth = 330
   Position = MainFormCenter
   FormFactor.Width = 320
@@ -12,7 +12,7 @@ object frmOptions: TfrmOptions
   DesignerMasterStyle = 0
   object lFooter: TLayout
     Align = Bottom
-    Position.Y = 142.000000000000000000
+    Position.Y = 164.000000000000000000
     Size.Width = 330.000000000000000000
     Size.Height = 50.000000000000000000
     Size.PlatformDefault = False
@@ -56,11 +56,11 @@ object frmOptions: TfrmOptions
   object VertScrollBox1: TVertScrollBox
     Align = Client
     Size.Width = 330.000000000000000000
-    Size.Height = 142.000000000000000000
+    Size.Height = 164.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 1
     Viewport.Width = 330.000000000000000000
-    Viewport.Height = 142.000000000000000000
+    Viewport.Height = 164.000000000000000000
     object gpAppTheme: TGroupBox
       Align = Top
       Margins.Left = 5.000000000000000000
@@ -115,6 +115,33 @@ object frmOptions: TfrmOptions
         Size.PlatformDefault = False
         TabOrder = 39
         Text = 'automatique'
+      end
+    end
+    object lblLanguage: TLabel
+      Align = Top
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Position.X = 5.000000000000000000
+      Position.Y = 123.000000000000000000
+      Size.Width = 320.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Trimming = None
+      Text = 'Langue'
+      TabOrder = 1
+      object cbLanguage: TComboBox
+        Align = Right
+        Items.Strings = (
+          'Anglais (WIP)'
+          'Fran'#231'ais'
+          'autre (WIP)')
+        Position.X = 168.000000000000000000
+        Size.Width = 152.000000000000000000
+        Size.Height = 17.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 4
       end
     end
   end
