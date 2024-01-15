@@ -11,7 +11,11 @@ uses
   fOptions in 'fOptions.pas' {frmOptions},
   Olf.RTL.Params in '..\lib-externes\librairies\Olf.RTL.Params.pas',
   uConfig in 'uConfig.pas',
-  uProjectASSCG in 'uProjectASSCG.pas';
+  uProjectASSCG in 'uProjectASSCG.pas',
+  Olf.FMX.Streams in '..\lib-externes\librairies\Olf.FMX.Streams.pas',
+  Olf.RTL.Language in '..\lib-externes\librairies\Olf.RTL.Language.pas',
+  Olf.RTL.Streams in '..\lib-externes\librairies\Olf.RTL.Streams.pas',
+  Olf.RTL.SystemAppearance in '..\lib-externes\librairies\Olf.RTL.SystemAppearance.pas';
 
 {$R *.res}
 

@@ -370,6 +370,10 @@
         <DCCReference Include="..\lib-externes\librairies\Olf.RTL.Params.pas"/>
         <DCCReference Include="uConfig.pas"/>
         <DCCReference Include="uProjectASSCG.pas"/>
+        <DCCReference Include="..\lib-externes\librairies\Olf.FMX.Streams.pas"/>
+        <DCCReference Include="..\lib-externes\librairies\Olf.RTL.Language.pas"/>
+        <DCCReference Include="..\lib-externes\librairies\Olf.RTL.Streams.pas"/>
+        <DCCReference Include="..\lib-externes\librairies\Olf.RTL.SystemAppearance.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
