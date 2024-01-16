@@ -46,7 +46,7 @@ type
   private
     FCurrentProject: TASSCGProject;
     procedure SetCurrentProject(const Value: TASSCGProject);
-    procedure InitFormTitle(AProject:TASSCGProject=nil);
+    procedure InitFormTitle(AProject: TASSCGProject = nil);
     procedure InitProjectMenusOptions;
     { Déclarations privées }
   protected
@@ -82,8 +82,21 @@ begin
   mnuOutils.visible := false;
   mnuOutilsOptions.Parent := mnuSystemMacOS;
   mnuOutilsOptions.Text := 'Réglages';
+
+  mnuFichierNouveau.ShortCut := scCommand + ord('N');
+  mnuFichierOuvrir.ShortCut := scCommand + ord('O');
+  mnuFichierEnregistrer.ShortCut := scCommand + ord('S');
+  mnuFichierFermer.ShortCut := 0;
+  // scCommand + ord('W'); // TODO : déclenche la fermeture du programme
+  mnuFichierQuitter.ShortCut := scCommand + ord('Q');
 {$ELSE}
   mnuSystemMacOS.visible := false;
+
+  mnuFichierNouveau.ShortCut := scCtrl + ord('N');
+  mnuFichierOuvrir.ShortCut := scCtrl + ord('O');
+  mnuFichierEnregistrer.ShortCut := scCtrl + ord('S');
+  mnuFichierFermer.ShortCut := scCtrl + ord('W');
+  mnuFichierQuitter.ShortCut := scalt + vkf4;
 {$ENDIF}
   // Initialisation des données du projet
   FCurrentProject := nil;
@@ -190,11 +203,14 @@ begin
   InitProjectMenusOptions;
 end;
 
-procedure TfrmMain.InitFormTitle(AProject:TASSCGProject);
+procedure TfrmMain.InitFormTitle(AProject: TASSCGProject);
 var
-  prj:tasscgproject;
+  prj: TASSCGProject;
 begin
-if assigned(aproject) then prj := AProject else prj := CurrentProject;
+  if assigned(AProject) then
+    prj := AProject
+  else
+    prj := CurrentProject;
 
   if assigned(prj) then
     if prj.HasChanged then
