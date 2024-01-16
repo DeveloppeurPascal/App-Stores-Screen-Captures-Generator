@@ -44,7 +44,10 @@ type
   end;
 
   TASSCGBitmap = class
-  private
+  private const
+    CVersion = 1;
+
+  var
     FBitmap: TBitmap;
     FProject: TASSCGProject;
     procedure SetBitmap(const Value: TBitmap);
@@ -60,7 +63,10 @@ type
   end;
 
   TASSCGBitmapList = class(TObjectList<TASSCGBitmap>)
-  private
+  private const
+    CVersion = 1;
+
+  var
     FProject: TASSCGProject;
     procedure SetProject(const Value: TASSCGProject);
   protected
@@ -72,7 +78,10 @@ type
   end;
 
   TASSCGLanguage = class
-  private
+  private const
+    CVersion = 1;
+
+  var
     FText: string;
     FProject: TASSCGProject;
     procedure SetText(const Value: string);
@@ -87,7 +96,10 @@ type
   end;
 
   TASSCGLanguageList = class(TObjectList<TASSCGLanguage>)
-  private
+  private const
+    CVersion = 1;
+
+  var
     FProject: TASSCGProject;
     procedure SetProject(const Value: TASSCGProject);
   protected
@@ -101,7 +113,10 @@ type
   TASSCGFillKind = (Solid, BitmapTiled, BitmapStretched);
 
   TASSCGBackground = class
-  private
+  private const
+    CVersion = 1;
+
+  var
     FColor: TAlphacolor;
     FBitmap: TBitmap;
     FKind: TASSCGFillKind;
@@ -125,7 +140,10 @@ type
   TASSCGEffect = (None, Shadow, Glow);
 
   TASSCGProject = class
-  private
+  private const
+    CVersion = 1;
+
+  var
     FBitmaps: TASSCGBitmapList;
     FBackground: TASSCGBackground;
     FEffect: TASSCGEffect;
@@ -161,30 +179,55 @@ implementation
 
 uses
   System.SysUtils,
-  System.IOUtils;
+  System.IOUtils, Olf.FMX.Streams, Olf.RTL.Streams;
 
 { TASSCGBitmap }
 
 constructor TASSCGBitmap.Create(AProject: TASSCGProject);
 begin
   inherited Create;
-  // TODO : à compléter
+  FBitmap := nil;
+  FProject := AProject;
 end;
 
 destructor TASSCGBitmap.Destroy;
 begin
-  // TODO : à compléter
+  FBitmap.free;
   inherited;
 end;
 
 procedure TASSCGBitmap.LoadFromStream(AStream: TStream);
+var
+  Version: byte;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
+
+  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+    raise exception.Create
+      ('Can''t load this project file. Please update this program.');
+
+  FBitmap.free;
+  try
+    FBitmap := LoadBitmapFromStream(AStream);
+  except
+    raise exception.Create('Wrong file format !');
+  end;
 end;
 
 procedure TASSCGBitmap.SaveToStream(AStream: TStream);
+var
+  Version: byte;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
+
+  Version := CVersion;
+  if (AStream.writedata(Version) <> sizeof(Version)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  SaveBitmapToStream(FBitmap, AStream);
 end;
 
 procedure TASSCGBitmap.SetBitmap(const Value: TBitmap);
@@ -212,17 +255,54 @@ end;
 constructor TASSCGBitmapList.Create(AProject: TASSCGProject);
 begin
   inherited Create;
-  // TODO : à compléter
+  FProject := AProject;
 end;
 
 procedure TASSCGBitmapList.LoadFromStream(AStream: TStream);
+var
+  Version: byte;
+  i, Nb: int64;
+  bmp: TASSCGBitmap;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
+
+  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+    raise exception.Create
+      ('Can''t load this project file. Please update this program.');
+
+  if (AStream.readdata(Nb) <> sizeof(Nb)) then
+    raise exception.Create('Wrong file format !');
+
+  clear;
+  for i := 1 to Nb do
+  begin
+    bmp := TASSCGBitmap.Create(FProject);
+    bmp.LoadFromStream(AStream);
+    add(bmp);
+  end;
 end;
 
 procedure TASSCGBitmapList.SaveToStream(AStream: TStream);
+var
+  Version: byte;
+  i, Nb: int64;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
+
+  Version := CVersion;
+  if (AStream.writedata(Version) <> sizeof(Version)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  Nb := count;
+  if (AStream.writedata(Nb) <> sizeof(Nb)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  for i := 0 to Nb - 1 do
+    self[i].SaveToStream(AStream);
 end;
 
 procedure TASSCGBitmapList.SetProject(const Value: TASSCGProject);
@@ -240,20 +320,41 @@ end;
 constructor TASSCGLanguage.Create(AProject: TASSCGProject);
 begin
   inherited Create;
-  // TODO : à compléter
-
+  FText := '';
+  FProject := AProject;
 end;
 
 procedure TASSCGLanguage.LoadFromStream(AStream: TStream);
+var
+  Version: byte;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
 
+  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+    raise exception.Create
+      ('Can''t load this project file. Please update this program.');
+
+  try
+    FText := LoadStringFromStream(AStream);
+  except
+    raise exception.Create('Wrong file format !');
+  end;
 end;
 
 procedure TASSCGLanguage.SaveToStream(AStream: TStream);
+var
+  Version: byte;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
 
+  Version := CVersion;
+  if (AStream.writedata(Version) <> sizeof(Version)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  SaveStringToStream(FText, AStream);
 end;
 
 procedure TASSCGLanguage.SetProject(const Value: TASSCGProject);
@@ -281,19 +382,54 @@ end;
 constructor TASSCGLanguageList.Create(AProject: TASSCGProject);
 begin
   inherited Create;
-  // TODO : à compléter
+  FProject := AProject;
 end;
 
 procedure TASSCGLanguageList.LoadFromStream(AStream: TStream);
+var
+  Version: byte;
+  i, Nb: int64;
+  ln: TASSCGLanguage;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
 
+  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+    raise exception.Create
+      ('Can''t load this project file. Please update this program.');
+
+  if (AStream.readdata(Nb) <> sizeof(Nb)) then
+    raise exception.Create('Wrong file format !');
+
+  clear;
+  for i := 1 to Nb do
+  begin
+    ln := TASSCGLanguage.Create(FProject);
+    ln.LoadFromStream(AStream);
+    add(ln);
+  end;
 end;
 
 procedure TASSCGLanguageList.SaveToStream(AStream: TStream);
+var
+  Version: byte;
+  i, Nb: int64;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
 
+  Version := CVersion;
+  if (AStream.writedata(Version) <> sizeof(Version)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  Nb := count;
+  if (AStream.writedata(Nb) <> sizeof(Nb)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  for i := 0 to Nb - 1 do
+    self[i].SaveToStream(AStream);
 end;
 
 procedure TASSCGLanguageList.SetProject(const Value: TASSCGProject);
@@ -311,27 +447,64 @@ end;
 constructor TASSCGBackground.Create(AProject: TASSCGProject);
 begin
   inherited Create;
-  // TODO : à compléter
-
+  FColor := TAlphaColors.White;
+  FBitmap := nil;
+  FKind := TASSCGFillKind.Solid;
+  FProject := AProject;
 end;
 
 destructor TASSCGBackground.Destroy;
 begin
-  // TODO : à compléter
-
+  FBitmap.free;
   inherited;
 end;
 
 procedure TASSCGBackground.LoadFromStream(AStream: TStream);
+var
+  Version: byte;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
 
+  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+    raise exception.Create
+      ('Can''t load this project file. Please update this program.');
+
+  if (AStream.read(FColor, sizeof(FColor)) <> sizeof(FColor)) then
+    raise exception.Create('Wrong file format !');
+
+  FBitmap.free;
+  try
+    FBitmap := LoadBitmapFromStream(AStream);
+  except
+    raise exception.Create('Wrong file format !');
+  end;
+
+  if (AStream.read(FKind, sizeof(FKind)) <> sizeof(FKind)) then
+    raise exception.Create('Wrong file format !');
 end;
 
 procedure TASSCGBackground.SaveToStream(AStream: TStream);
+var
+  Version: byte;
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
 
+  Version := CVersion;
+  if (AStream.writedata(Version) <> sizeof(Version)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  if (AStream.writedata(FColor) <> sizeof(FColor)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  SaveBitmapToStream(FBitmap, AStream);
+
+  if (AStream.writedata(FKind) <> sizeof(FKind)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
 end;
 
 procedure TASSCGBackground.SetBitmap(const Value: TBitmap);
@@ -380,10 +553,10 @@ constructor TASSCGProject.Create(AFromFileName: string);
 begin
   inherited Create;
 
-  FBitmaps := TASSCGBitmapList.Create(Self);
-  FBackground := TASSCGBackground.Create(Self);
+  FBitmaps := TASSCGBitmapList.Create(self);
+  FBackground := TASSCGBackground.Create(self);
   FEffect := TASSCGEffect.None;
-  FLanguages := TASSCGLanguageList.Create(Self);
+  FLanguages := TASSCGLanguageList.Create(self);
   FHasChanged := false;
 
   if not AFromFileName.IsEmpty then
@@ -435,8 +608,32 @@ begin
 end;
 
 procedure TASSCGProject.LoadFromStream(AStream: TStream);
+var
+  Version: byte;
+  Header: array [1 .. 6] of byte; // 'ASSCG'+#0
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
+
+  if (AStream.read(Header, sizeof(Header)) <> sizeof(Header)) or
+    (Header[1] <> ord('A')) or (Header[2] <> ord('S')) or (Header[3] <> ord('S')
+    ) or (Header[4] <> ord('C')) or (Header[5] <> ord('G')) or (Header[6] <> 0)
+  then
+    raise exception.Create('Wrong file format !');
+
+  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+    raise exception.Create
+      ('Can''t load this project file. Please update this program.');
+
+  FBitmaps.LoadFromStream(AStream);
+
+  FBackground.LoadFromStream(AStream);
+
+  if (AStream.read(FEffect, sizeof(FEffect)) <> sizeof(FEffect)) then
+    raise exception.Create('Wrong file format !');
+
+  FLanguages.LoadFromStream(AStream);
+
   HasChanged := false;
 end;
 
@@ -474,8 +671,38 @@ begin
 end;
 
 procedure TASSCGProject.SaveToStream(AStream: TStream);
+var
+  Version: byte;
+  Header: array [1 .. 6] of byte; // 'ASSCG'+#0
 begin
-  // TODO : à compléter
+  if not assigned(AStream) then
+    raise exception.Create('Need a stream instance to load from.');
+
+  Header[1] := ord('A');
+  Header[2] := ord('S');
+  Header[3] := ord('S');
+  Header[4] := ord('C');
+  Header[5] := ord('G');
+  Header[6] := 0;
+  if (AStream.writedata(Header) <> sizeof(Header)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  Version := CVersion;
+  if (AStream.writedata(Version) <> sizeof(Version)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  FBitmaps.SaveToStream(AStream);
+
+  FBackground.SaveToStream(AStream);
+
+  if (AStream.writedata(FEffect) <> sizeof(FEffect)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  FLanguages.SaveToStream(AStream);
+
   HasChanged := false;
 end;
 
@@ -510,8 +737,8 @@ procedure TASSCGProject.SetFilename(const Value: string);
 begin
   FFileName := Value;
 
-  TMessageManager.DefaultManager.SendMessage(Self,
-    TASSCGProjectNameHasChangedMessage.Create(Self), true);
+  TMessageManager.DefaultManager.SendMessage(self,
+    TASSCGProjectNameHasChangedMessage.Create(self), true);
 end;
 
 procedure TASSCGProject.SetHasChanged(const Value: boolean);
@@ -521,8 +748,8 @@ begin
 
   FHasChanged := Value;
 
-  TMessageManager.DefaultManager.SendMessage(Self,
-    TASSCGProjectHasChangedMessage.Create(Self), true);
+  TMessageManager.DefaultManager.SendMessage(self,
+    TASSCGProjectHasChangedMessage.Create(self), true);
 end;
 
 procedure TASSCGProject.SetLanguages(const Value: TASSCGLanguageList);
