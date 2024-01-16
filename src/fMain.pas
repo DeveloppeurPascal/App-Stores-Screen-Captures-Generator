@@ -178,11 +178,8 @@ end;
 procedure TfrmMain.SetCurrentProject(const Value: TASSCGProject);
 begin
   if assigned(FCurrentProject) and (FCurrentProject <> Value) then
-    freeandnil(FCurrentProject);
-
-  if (not assigned(Value)) and assigned(FCurrentProject) then
   begin
-    if CurrentProject.HasChanged then
+    if FCurrentProject.HasChanged then
     begin
       // demander si on veut enregistrer
     end;
