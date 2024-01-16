@@ -21,12 +21,13 @@ object frmMain: TfrmMain
       Text = '&Fichier'
       object mnuFichierOuvrir: TMenuItem
         Locked = True
-        ShortCut = 16506
+        ShortCut = 16463
         Text = '&Ouvrir'
         OnClick = mnuFichierOuvrirClick
       end
       object mnuFichierNouveau: TMenuItem
         Locked = True
+        ShortCut = 16462
         Text = '&Nouveau'
         OnClick = mnuFichierNouveauClick
       end
@@ -38,11 +39,13 @@ object frmMain: TfrmMain
       end
       object mnuFichierFermer: TMenuItem
         Locked = True
+        ShortCut = 16471
         Text = '&Fermer'
         OnClick = mnuFichierFermerClick
       end
       object mnuFichierQuitter: TMenuItem
         Locked = True
+        ShortCut = 32883
         Text = '&Quitter'
         OnClick = mnuFichierQuitterClick
       end
