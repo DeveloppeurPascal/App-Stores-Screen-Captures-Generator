@@ -46,7 +46,10 @@ type
   private
     FCurrentProject: TASSCGProject;
     procedure SetCurrentProject(const Value: TASSCGProject);
+    procedure InitFormTitle(AProject:TASSCGProject=nil);
+    procedure InitProjectMenusOptions;
     { Déclarations privées }
+  protected
   public
     { Déclarations publiques }
     property CurrentProject: TASSCGProject read FCurrentProject
@@ -61,17 +64,15 @@ implementation
 {$R *.fmx}
 
 uses
+  System.Messaging,
   u_urlOpen,
   fOptions,
   Olf.FMX.AboutDialogForm;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
-  // Titre de la fenêtre principale
-  caption := OlfAboutDialog1.Titre + ' v' + OlfAboutDialog1.VersionNumero;
-{$IFDEF DEBUG}
-  caption := '[DEBUG] ' + caption;
-{$ENDIF}
+  InitFormTitle;
+
   // Menu de la fenêtre principale
 {$IFDEF MACOS}
   mnuFichierQuitter.visible := false;
@@ -84,9 +85,33 @@ begin
 {$ELSE}
   mnuSystemMacOS.visible := false;
 {$ENDIF}
-  // Initialisation des données du programme
+  // Initialisation des données du projet
   FCurrentProject := nil;
-  CurrentProject := nil;
+  InitProjectMenusOptions;
+  TMessageManager.DefaultManager.SubscribeToMessage
+    (TASSCGProjectHasChangedMessage,
+    procedure(const Sender: TObject; const M: TMessage)
+    var
+      msg: TASSCGProjectHasChangedMessage;
+    begin
+      if M is TASSCGProjectHasChangedMessage then
+      begin
+        msg := M as TASSCGProjectHasChangedMessage;
+        InitFormTitle(msg.Project);
+      end;
+    end);
+  TMessageManager.DefaultManager.SubscribeToMessage
+    (TASSCGProjectNameHasChangedMessage,
+    procedure(const Sender: TObject; const M: TMessage)
+    var
+      msg: TASSCGProjectNameHasChangedMessage;
+    begin
+      if M is TASSCGProjectNameHasChangedMessage then
+      begin
+        msg := M as TASSCGProjectNameHasChangedMessage;
+        InitFormTitle(msg.Project);
+      end;
+    end);
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
@@ -106,21 +131,26 @@ end;
 
 procedure TfrmMain.mnuFichierFermerClick(Sender: TObject);
 begin
-  // TODO : à compléter
+  CurrentProject := nil;
+
+  InitFormTitle;
 end;
 
 procedure TfrmMain.mnuFichierNouveauClick(Sender: TObject);
 begin
+  CurrentProject := TASSCGProject.create;
+
   // TODO : à compléter
-  CurrentProject := nil;
-  // créer un nouveau projet
 end;
 
 procedure TfrmMain.mnuFichierOuvrirClick(Sender: TObject);
+var
+  filename: string;
 begin
+  // choisir un fichier existant
+  // associer le fichier existant au projet
+  CurrentProject := TASSCGProject.create(filename);
   // TODO : à compléter
-  CurrentProject := nil;
-  // ouvrir un nouveau projet
 end;
 
 procedure TfrmMain.mnuOutilsOptionsClick(Sender: TObject);
@@ -147,6 +177,9 @@ end;
 
 procedure TfrmMain.SetCurrentProject(const Value: TASSCGProject);
 begin
+  if assigned(FCurrentProject) and (FCurrentProject <> Value) then
+    freeandnil(FCurrentProject);
+
   if (not assigned(Value)) and assigned(FCurrentProject) then
   begin
     if CurrentProject.HasChanged then
@@ -155,7 +188,35 @@ begin
     end;
     FCurrentProject.free;
   end;
+
   FCurrentProject := Value;
+  InitProjectMenusOptions;
+end;
+
+procedure TfrmMain.InitFormTitle(AProject:TASSCGProject);
+var
+  prj:tasscgproject;
+begin
+if assigned(aproject) then prj := AProject else prj := CurrentProject;
+
+  if assigned(prj) then
+    if prj.HasChanged then
+      caption := prj.name + '* - '
+    else
+      caption := prj.name + ' - '
+  else
+    caption := '';
+
+  caption := caption + OlfAboutDialog1.Titre + ' v' +
+    OlfAboutDialog1.VersionNumero;
+
+{$IFDEF DEBUG}
+  caption := '[DEBUG] ' + caption;
+{$ENDIF}
+end;
+
+procedure TfrmMain.InitProjectMenusOptions;
+begin
   mnuFichierEnregistrer.Enabled := assigned(FCurrentProject);
   mnuFichierFermer.Enabled := assigned(FCurrentProject);
 end;

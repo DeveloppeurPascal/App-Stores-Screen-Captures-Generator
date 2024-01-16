@@ -17,12 +17,32 @@ interface
 uses
   // TODO : conditionner l'unité FMX/VCL.Graphics en fonction du framework
   FMX.graphics,
+  System.Messaging,
   System.UITypes,
   System.Classes,
   System.Generics.Collections;
 
-type
 {$SCOPEDENUMS ON}
+
+type
+  TASSCGProject = class;
+
+  TASSCGProjectHasChangedMessage = class(TMessage)
+  private
+    FProject: TASSCGProject;
+  public
+    property Project: TASSCGProject read FProject;
+    constructor Create(AProject: TASSCGProject);
+  end;
+
+  TASSCGProjectNameHasChangedMessage = class(TMessage)
+  private
+    FProject: TASSCGProject;
+  public
+    property Project: TASSCGProject read FProject;
+    constructor Create(AProject: TASSCGProject);
+  end;
+
   TASSCGBitmap = class
   private
     FBitmap: TBitmap;
@@ -94,11 +114,14 @@ type
     FEffect: TASSCGEffect;
     FLanguages: TASSCGLanguageList;
     FHasChanged: boolean;
+    FFileName: string;
     procedure SetBackground(const Value: TASSCGBackground);
     procedure SetBitmaps(const Value: TASSCGBitmapList);
     procedure SetEffect(const Value: TASSCGEffect);
     procedure SetLanguages(const Value: TASSCGLanguageList);
     procedure SetHasChanged(const Value: boolean);
+    function GetProjectName: string;
+    procedure SetFilename(const Value: string);
   protected
   public
     property Bitmaps: TASSCGBitmapList read FBitmaps write SetBitmaps;
@@ -107,15 +130,21 @@ type
     property Effect: TASSCGEffect read FEffect write SetEffect;
     // TODO : add stores/targets list
     property HasChanged: boolean read FHasChanged write SetHasChanged;
+    property Name: string read GetProjectName;
+    property Filename: string read FFileName write SetFilename;
     procedure LoadFromStream(AStream: TStream);
     procedure LoadFromFile(AFileName: string);
     procedure SaveToStream(AStream: TStream);
     procedure SaveToFile(AFileName: string);
-    constructor Create;
+    constructor Create(AFromFileName: string = '');
     destructor Destroy; override;
   end;
 
 implementation
+
+uses
+  System.SysUtils,
+  System.IOUtils;
 
 { TASSCGBitmap }
 
@@ -242,18 +271,37 @@ end;
 
 { TASSCGProject }
 
-constructor TASSCGProject.Create;
+constructor TASSCGProject.Create(AFromFileName: string);
 begin
-  inherited;
-  // TODO : à compléter
+  inherited Create;
 
+  FBitmaps := TASSCGBitmapList.Create;
+  FBackground := TASSCGBackground.Create;
+  FEffect := TASSCGEffect.None;
+  FLanguages := TASSCGLanguageList.Create;
+  FHasChanged := false;
+
+  if not AFromFileName.IsEmpty then
+    LoadFromFile(AFromFileName)
+  else
+    Filename := '';
 end;
 
 destructor TASSCGProject.Destroy;
 begin
-  // TODO : à compléter
+  FBitmaps.free;
+  FBackground.free;
+  FLanguages.free;
 
   inherited;
+end;
+
+function TASSCGProject.GetProjectName: string;
+begin
+  if FFileName.IsEmpty then
+    result := 'Untitled'
+  else
+    result := tpath.GetFileNameWithoutExtension(FFileName);
 end;
 
 procedure TASSCGProject.LoadFromFile(AFileName: string);
@@ -294,15 +342,42 @@ begin
   FEffect := Value;
 end;
 
+procedure TASSCGProject.SetFilename(const Value: string);
+begin
+  FFileName := Value;
+
+  TMessageManager.DefaultManager.SendMessage(self,
+    TASSCGProjectNameHasChangedMessage.Create(self), true);
+end;
+
 procedure TASSCGProject.SetHasChanged(const Value: boolean);
 begin
   FHasChanged := Value;
   // TODO : à prendre en charge dans tous les éléments du projet
+
+  TMessageManager.DefaultManager.SendMessage(self,
+    TASSCGProjectHasChangedMessage.Create(self), true);
 end;
 
 procedure TASSCGProject.SetLanguages(const Value: TASSCGLanguageList);
 begin
   FLanguages := Value;
+end;
+
+{ TASSCGProjectHasChanged }
+
+constructor TASSCGProjectHasChangedMessage.Create(AProject: TASSCGProject);
+begin
+  inherited Create;
+  FProject := AProject;
+end;
+
+{ TASSCGProjectNameHasChangedMessage }
+
+constructor TASSCGProjectNameHasChangedMessage.Create(AProject: TASSCGProject);
+begin
+  inherited Create;
+  FProject := AProject;
 end;
 
 end.
