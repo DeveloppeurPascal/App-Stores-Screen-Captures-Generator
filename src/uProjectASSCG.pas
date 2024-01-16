@@ -46,20 +46,27 @@ type
   TASSCGBitmap = class
   private
     FBitmap: TBitmap;
+    FProject: TASSCGProject;
     procedure SetBitmap(const Value: TBitmap);
+    procedure SetProject(const Value: TASSCGProject);
   protected
   public
     property Bitmap: TBitmap read FBitmap write SetBitmap;
+    property Project: TASSCGProject read FProject write SetProject;
+    constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
-    constructor Create;
     destructor Destroy; override;
   end;
 
   TASSCGBitmapList = class(TObjectList<TASSCGBitmap>)
   private
+    FProject: TASSCGProject;
+    procedure SetProject(const Value: TASSCGProject);
   protected
   public
+    property Project: TASSCGProject read FProject write SetProject;
+    constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   end;
@@ -67,19 +74,26 @@ type
   TASSCGLanguage = class
   private
     FText: string;
+    FProject: TASSCGProject;
     procedure SetText(const Value: string);
+    procedure SetProject(const Value: TASSCGProject);
   protected
   public
     property Text: string read FText write SetText;
+    property Project: TASSCGProject read FProject write SetProject;
+    constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
-    constructor Create;
   end;
 
   TASSCGLanguageList = class(TObjectList<TASSCGLanguage>)
   private
+    FProject: TASSCGProject;
+    procedure SetProject(const Value: TASSCGProject);
   protected
   public
+    property Project: TASSCGProject read FProject write SetProject;
+    constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   end;
@@ -91,17 +105,20 @@ type
     FColor: TAlphacolor;
     FBitmap: TBitmap;
     FKind: TASSCGFillKind;
+    FProject: TASSCGProject;
     procedure SetBitmap(const Value: TBitmap);
     procedure SetColor(const Value: TAlphacolor);
     procedure SetKind(const Value: TASSCGFillKind);
+    procedure SetProject(const Value: TASSCGProject);
   protected
   public
     property Kind: TASSCGFillKind read FKind write SetKind;
     property Color: TAlphacolor read FColor write SetColor;
     property Bitmap: TBitmap read FBitmap write SetBitmap;
+    property Project: TASSCGProject read FProject write SetProject;
+    constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
-    constructor Create;
     destructor Destroy; override;
   end;
 
@@ -135,7 +152,7 @@ type
     procedure LoadFromStream(AStream: TStream);
     procedure LoadFromFile(AFileName: string);
     procedure SaveToStream(AStream: TStream);
-    procedure SaveToFile(AFileName: string);
+    procedure SaveToFile(AFileName: string = '');
     constructor Create(AFromFileName: string = '');
     destructor Destroy; override;
   end;
@@ -148,9 +165,9 @@ uses
 
 { TASSCGBitmap }
 
-constructor TASSCGBitmap.Create;
+constructor TASSCGBitmap.Create(AProject: TASSCGProject);
 begin
-  inherited;
+  inherited Create;
   // TODO : à compléter
 end;
 
@@ -172,10 +189,31 @@ end;
 
 procedure TASSCGBitmap.SetBitmap(const Value: TBitmap);
 begin
+  if FBitmap = Value then
+    exit;
+
   FBitmap := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.SetProject(const Value: TASSCGProject);
+begin
+  if FProject = Value then
+    exit;
+
+  FProject := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
 end;
 
 { TASSCGBitmapList }
+
+constructor TASSCGBitmapList.Create(AProject: TASSCGProject);
+begin
+  inherited Create;
+  // TODO : à compléter
+end;
 
 procedure TASSCGBitmapList.LoadFromStream(AStream: TStream);
 begin
@@ -187,11 +225,22 @@ begin
   // TODO : à compléter
 end;
 
+procedure TASSCGBitmapList.SetProject(const Value: TASSCGProject);
+begin
+  if FProject = Value then
+    exit;
+
+  FProject := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
 { TASSCGLanguage }
 
-constructor TASSCGLanguage.Create;
+constructor TASSCGLanguage.Create(AProject: TASSCGProject);
 begin
-  inherited; // TODO : à compléter
+  inherited Create;
+  // TODO : à compléter
 
 end;
 
@@ -207,12 +256,33 @@ begin
 
 end;
 
+procedure TASSCGLanguage.SetProject(const Value: TASSCGProject);
+begin
+  if FProject = Value then
+    exit;
+
+  FProject := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
 procedure TASSCGLanguage.SetText(const Value: string);
 begin
+  if FText = Value then
+    exit;
+
   FText := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
 end;
 
 { TASSCGLanguageList }
+
+constructor TASSCGLanguageList.Create(AProject: TASSCGProject);
+begin
+  inherited Create;
+  // TODO : à compléter
+end;
 
 procedure TASSCGLanguageList.LoadFromStream(AStream: TStream);
 begin
@@ -226,11 +296,21 @@ begin
 
 end;
 
+procedure TASSCGLanguageList.SetProject(const Value: TASSCGProject);
+begin
+  if FProject = Value then
+    exit;
+
+  FProject := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
 { TASSCGBackground }
 
-constructor TASSCGBackground.Create;
+constructor TASSCGBackground.Create(AProject: TASSCGProject);
 begin
-  inherited;
+  inherited Create;
   // TODO : à compléter
 
 end;
@@ -256,17 +336,42 @@ end;
 
 procedure TASSCGBackground.SetBitmap(const Value: TBitmap);
 begin
+  if FBitmap = Value then
+    exit;
+
   FBitmap := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
 end;
 
 procedure TASSCGBackground.SetColor(const Value: TAlphacolor);
 begin
+  if FColor = Value then
+    exit;
+
   FColor := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
 end;
 
 procedure TASSCGBackground.SetKind(const Value: TASSCGFillKind);
 begin
+  if FKind = Value then
+    exit;
+
   FKind := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBackground.SetProject(const Value: TASSCGProject);
+begin
+  if FProject = Value then
+    exit;
+
+  FProject := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
 end;
 
 { TASSCGProject }
@@ -275,10 +380,10 @@ constructor TASSCGProject.Create(AFromFileName: string);
 begin
   inherited Create;
 
-  FBitmaps := TASSCGBitmapList.Create;
-  FBackground := TASSCGBackground.Create;
+  FBitmaps := TASSCGBitmapList.Create(Self);
+  FBackground := TASSCGBackground.Create(Self);
   FEffect := TASSCGEffect.None;
-  FLanguages := TASSCGLanguageList.Create;
+  FLanguages := TASSCGLanguageList.Create(Self);
   FHasChanged := false;
 
   if not AFromFileName.IsEmpty then
@@ -305,9 +410,28 @@ begin
 end;
 
 procedure TASSCGProject.LoadFromFile(AFileName: string);
+var
+  fs: TFileStream;
 begin
-  // TODO : à compléter
-
+  if AFileName.IsEmpty or (not tfile.Exists(AFileName)) then
+    raise exception.Create('File doesn''t exist !');
+  try
+    fs := TFileStream.Create(AFileName, fmOpenRead);
+    try
+      LoadFromStream(fs);
+      Filename := AFileName;
+      HasChanged := false;
+    finally
+      fs.free;
+    end;
+  except
+{$IFDEF DEBUG}
+    on e: exception do
+      raise exception.Create('Can''t load this file.' + slinebreak + e.message);
+{$ELSE}
+    raise exception.Create('Can''t load this file.');
+{$ENDIF}
+  end;
 end;
 
 procedure TASSCGProject.LoadFromStream(AStream: TStream);
@@ -317,8 +441,36 @@ begin
 end;
 
 procedure TASSCGProject.SaveToFile(AFileName: string);
+var
+  fs: TFileStream;
+  fn: string;
 begin
-  // TODO : à compléter
+  if AFileName.IsEmpty then
+    fn := FFileName
+  else
+    fn := AFileName;
+
+  if fn.IsEmpty then
+    raise exception.Create('Can''t save the project without a filename !');
+
+  try
+    fs := TFileStream.Create(fn, fmOpenwrite);
+    try
+      SaveToStream(fs);
+      if (AFileName <> FFileName) then
+        Filename := fn;
+      HasChanged := false;
+    finally
+      fs.free;
+    end;
+  except
+{$IFDEF DEBUG}
+    on e: exception do
+      raise exception.Create('Can''t save this file.' + slinebreak + e.message);
+{$ELSE}
+    raise exception.Create('Can''t save this file.');
+{$ENDIF}
+  end;
 end;
 
 procedure TASSCGProject.SaveToStream(AStream: TStream);
@@ -329,39 +481,57 @@ end;
 
 procedure TASSCGProject.SetBackground(const Value: TASSCGBackground);
 begin
+  if FBackground = Value then
+    exit;
+
   FBackground := Value;
+  HasChanged := true;
 end;
 
 procedure TASSCGProject.SetBitmaps(const Value: TASSCGBitmapList);
 begin
+  if FBitmaps = Value then
+    exit;
+
   FBitmaps := Value;
+  HasChanged := true;
 end;
 
 procedure TASSCGProject.SetEffect(const Value: TASSCGEffect);
 begin
+  if FEffect = Value then
+    exit;
+
   FEffect := Value;
+  HasChanged := true;
 end;
 
 procedure TASSCGProject.SetFilename(const Value: string);
 begin
   FFileName := Value;
 
-  TMessageManager.DefaultManager.SendMessage(self,
-    TASSCGProjectNameHasChangedMessage.Create(self), true);
+  TMessageManager.DefaultManager.SendMessage(Self,
+    TASSCGProjectNameHasChangedMessage.Create(Self), true);
 end;
 
 procedure TASSCGProject.SetHasChanged(const Value: boolean);
 begin
-  FHasChanged := Value;
-  // TODO : à prendre en charge dans tous les éléments du projet
+  if FHasChanged = Value then
+    exit;
 
-  TMessageManager.DefaultManager.SendMessage(self,
-    TASSCGProjectHasChangedMessage.Create(self), true);
+  FHasChanged := Value;
+
+  TMessageManager.DefaultManager.SendMessage(Self,
+    TASSCGProjectHasChangedMessage.Create(Self), true);
 end;
 
 procedure TASSCGProject.SetLanguages(const Value: TASSCGLanguageList);
 begin
+  if FLanguages = Value then
+    exit;
+
   FLanguages := Value;
+  HasChanged := true;
 end;
 
 { TASSCGProjectHasChanged }
