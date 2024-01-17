@@ -72,10 +72,9 @@ var
 begin
 {$IFDEF DEBUG}
   path := tpath.combine(tpath.GetDocumentsPath, 'OlfSoftware-debug',
-    tpath.GetFileNameWithoutExtension(tpath.GetAppPath) + '-debug');
+    'ASSCG-debug');
 {$ELSE}
-  path := tpath.combine(tpath.GetHomePath, 'OlfSoftware',
-    tpath.GetFileNameWithoutExtension(tpath.GetAppPath));
+  path := tpath.combine(tpath.GetHomePath, 'OlfSoftware', 'ASSCG');
 {$ENDIF}
   TParams.setFolderName(path);
 end;
