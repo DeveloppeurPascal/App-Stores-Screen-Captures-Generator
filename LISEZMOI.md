@@ -38,6 +38,7 @@ Ce projet utilise des dépendances sous forme de sous modules. Ils seront absent
 
 * [DeveloppeurPascal/librairies](https://github.com/DeveloppeurPascal/librairies) doit être installé dans le sous dossier ./lib-externes/librairies
 * [DeveloppeurPascal/AboutDialog-Delphi-Component](https://github.com/DeveloppeurPascal/AboutDialog-Delphi-Component) doit être installé dans le sous dossier ./lib-externes/AboutDialog-Delphi-Component
+* [DeveloppeurPascal/ASSCG-Data-Admin](https://github.com/DeveloppeurPascal/ASSCG-Data-Admin) doit être installé dans le sous dossier ./lib-externes/ASSCG-Data-Admin
 
 ## Licence d'utilisation de ce dépôt de code et de son contenu
 
