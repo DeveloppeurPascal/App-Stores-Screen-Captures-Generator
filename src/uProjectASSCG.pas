@@ -26,6 +26,8 @@ uses
 
 type
   TASSCGProject = class;
+  TASSCGLanguages = class;
+  TASSCGIDStores = class;
 
   TASSCGProjectHasChangedMessage = class(TMessage)
   private
@@ -45,17 +47,32 @@ type
 
   TASSCGBitmap = class
   private const
-    CVersion = 1;
+    CVersion = 2;
+    // don't forget to increase CProjectVersion if you change CVersion
 
   var
     FBitmap: TBitmap;
     FProject: TASSCGProject;
+    FForAllStores: boolean;
+    FForAllLanguages: boolean;
+    FForStores: TASSCGIDStores;
+    FForLanguages: TASSCGLanguages;
+    procedure SetForAllLanguages(const Value: boolean);
+    procedure SetForAllStores(const Value: boolean);
+    procedure SetForLanguages(const Value: TASSCGLanguages);
+    procedure SetForStores(const Value: TASSCGIDStores);
     procedure SetBitmap(const Value: TBitmap);
     procedure SetProject(const Value: TASSCGProject);
   protected
   public
     property Bitmap: TBitmap read FBitmap write SetBitmap;
     property Project: TASSCGProject read FProject write SetProject;
+    property ForAllLanguages: boolean read FForAllLanguages
+      write SetForAllLanguages;
+    property ForLanguages: TASSCGLanguages read FForLanguages
+      write SetForLanguages;
+    property ForAllStores: boolean read FForAllStores write SetForAllStores;
+    property ForStores: TASSCGIDStores read FForStores write SetForStores;
     constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
@@ -65,6 +82,7 @@ type
   TASSCGBitmapList = class(TObjectList<TASSCGBitmap>)
   private const
     CVersion = 1;
+    // don't forget to increase CProjectVersion if you change CVersion
 
   var
     FProject: TASSCGProject;
@@ -80,6 +98,7 @@ type
   TASSCGLanguages = class(TList<string>)
   private const
     CVersion = 2;
+    // don't forget to increase CProjectVersion if you change CVersion
 
   var
     FProject: TASSCGProject;
@@ -101,6 +120,7 @@ type
   TASSCGBackground = class
   private const
     CVersion = 1;
+    // don't forget to increase CProjectVersion if you change CVersion
 
   var
     FColor: TAlphacolor;
@@ -128,6 +148,7 @@ type
   TASSCGIDStores = class(TList<string>)
   private const
     CVersion = 1;
+    // don't forget to increase CProjectVersion if you change CVersion
 
   var
     FProject: TASSCGProject;
@@ -146,7 +167,7 @@ type
 
   TASSCGProject = class
   private const
-    CVersion = 2;
+    CProjectVersion = 2;
 
   var
     FBitmaps: TASSCGBitmapList;
@@ -186,7 +207,9 @@ implementation
 
 uses
   System.SysUtils,
-  System.IOUtils, Olf.FMX.Streams, Olf.RTL.Streams;
+  System.IOUtils,
+  Olf.FMX.Streams,
+  Olf.RTL.Streams;
 
 { TASSCGBitmap }
 
@@ -195,11 +218,17 @@ begin
   inherited Create;
   FBitmap := nil;
   FProject := AProject;
+  FForAllStores := true;
+  FForAllLanguages := true;
+  FForStores := TASSCGIDStores.Create(AProject);
+  FForLanguages := TASSCGLanguages.Create(AProject);
 end;
 
 destructor TASSCGBitmap.Destroy;
 begin
   FBitmap.free;
+  FForStores.free;
+  FForLanguages.free;
   inherited;
 end;
 
@@ -220,6 +249,19 @@ begin
   except
     raise exception.Create('Wrong file format !');
   end;
+
+  if (Version >= 2) then
+  begin
+    if (AStream.readdata(FForAllStores) <> sizeof(FForAllStores)) then
+      raise exception.Create('Wrong file format !');
+
+    if (AStream.readdata(FForAllLanguages) <> sizeof(FForAllLanguages)) then
+      raise exception.Create('Wrong file format !');
+
+    FForStores.LoadFromStream(AStream);
+
+    FForLanguages.LoadFromStream(AStream);
+  end;
 end;
 
 procedure TASSCGBitmap.SaveToStream(AStream: TStream);
@@ -235,6 +277,18 @@ begin
       ('Can''t save this project file. No enough space on the disk.');
 
   SaveBitmapToStream(FBitmap, AStream);
+
+  if (AStream.writedata(FForAllStores) <> sizeof(FForAllStores)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  if (AStream.writedata(FForAllLanguages) <> sizeof(FForAllLanguages)) then
+    raise exception.Create
+      ('Can''t save this project file. No enough space on the disk.');
+
+  FForStores.SaveToStream(AStream);
+
+  FForLanguages.SaveToStream(AStream);
 end;
 
 procedure TASSCGBitmap.SetBitmap(const Value: TBitmap);
@@ -243,6 +297,46 @@ begin
     exit;
 
   FBitmap := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.SetForAllLanguages(const Value: boolean);
+begin
+  if FForAllLanguages = Value then
+    exit;
+
+  FForAllLanguages := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.SetForAllStores(const Value: boolean);
+begin
+  if FForAllStores = Value then
+    exit;
+
+  FForAllStores := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.SetForLanguages(const Value: TASSCGLanguages);
+begin
+  if FForLanguages = Value then
+    exit;
+
+  FForLanguages := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.SetForStores(const Value: TASSCGIDStores);
+begin
+  if FForStores = Value then
+    exit;
+
+  FForStores := Value;
   if assigned(FProject) then
     FProject.HasChanged := true;
 end;
@@ -587,7 +681,8 @@ begin
   then
     raise exception.Create('Wrong file format !');
 
-  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
+  if (AStream.readdata(Version) <> sizeof(Version)) or
+    (Version > CProjectVersion) then
     raise exception.Create
       ('Can''t load this project file. Please update the program.');
 
@@ -657,7 +752,7 @@ begin
     raise exception.Create
       ('Can''t save this project file. No enough space on the disk.');
 
-  Version := CVersion;
+  Version := CProjectVersion;
   if (AStream.writedata(Version) <> sizeof(Version)) then
     raise exception.Create
       ('Can''t save this project file. No enough space on the disk.');
