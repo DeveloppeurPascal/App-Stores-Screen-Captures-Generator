@@ -52,7 +52,7 @@ end;
 
 class function TConfig.GetAppTheme: TAppTheme;
 begin
-  result := TAppTheme(TParams.getValue(CConfigAppTheme, 0));
+  result := TAppTheme(TParams.getValue(CConfigAppTheme, ord(TAppTheme.auto)));
   // TODO : déclencher le changement éventuel de thème
 end;
 
