@@ -15,7 +15,9 @@ uses
   Olf.FMX.Streams in '..\lib-externes\librairies\Olf.FMX.Streams.pas',
   Olf.RTL.Language in '..\lib-externes\librairies\Olf.RTL.Language.pas',
   Olf.RTL.Streams in '..\lib-externes\librairies\Olf.RTL.Streams.pas',
-  Olf.RTL.SystemAppearance in '..\lib-externes\librairies\Olf.RTL.SystemAppearance.pas';
+  Olf.RTL.SystemAppearance in '..\lib-externes\librairies\Olf.RTL.SystemAppearance.pas',
+  uProjectASSCGStores in '..\lib-externes\ASSCG-Data-Admin\src\uProjectASSCGStores.pas',
+  u_download in '..\lib-externes\librairies\u_download.pas';
 
 {$R *.res}
 
