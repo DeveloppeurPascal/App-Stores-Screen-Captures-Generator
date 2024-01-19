@@ -90,6 +90,10 @@ type
     constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
+    function Add(const Value: string): NativeInt;
+    procedure Insert(Index: NativeInt; const Value: string);
+    function Remove(const Value: string): NativeInt;
+    procedure Delete(Index: NativeInt);
   end;
 
   TASSCGFillKind = (Solid, BitmapTiled, BitmapStretched);
@@ -134,6 +138,10 @@ type
     constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
+    function Add(const Value: string): NativeInt;
+    procedure Insert(Index: NativeInt; const Value: string);
+    function Remove(const Value: string): NativeInt;
+    procedure Delete(Index: NativeInt);
   end;
 
   TASSCGProject = class
@@ -278,7 +286,7 @@ begin
   begin
     bmp := TASSCGBitmap.Create(FProject);
     bmp.LoadFromStream(AStream);
-    add(bmp);
+    Add(bmp);
   end;
 end;
 
@@ -316,10 +324,28 @@ end;
 
 { TASSCGLanguages }
 
+function TASSCGLanguages.Add(const Value: string): NativeInt;
+begin
+  result := inherited;
+  FProject.HasChanged := true;
+end;
+
 constructor TASSCGLanguages.Create(AProject: TASSCGProject);
 begin
   inherited Create;
   FProject := AProject;
+end;
+
+procedure TASSCGLanguages.Delete(Index: NativeInt);
+begin
+  inherited;
+  FProject.HasChanged := true;
+end;
+
+procedure TASSCGLanguages.Insert(Index: NativeInt; const Value: string);
+begin
+  inherited;
+  FProject.HasChanged := true;
 end;
 
 procedure TASSCGLanguages.LoadFromStream(AStream: TStream);
@@ -339,7 +365,13 @@ begin
 
   clear;
   for i := 1 to Nb do
-    add  (LoadStringFromStream(AStream, TEncoding.UTF8));
+    Add(LoadStringFromStream(AStream, TEncoding.UTF8));
+end;
+
+function TASSCGLanguages.Remove(const Value: string): NativeInt;
+begin
+  result := inherited;
+  FProject.HasChanged := true;
 end;
 
 procedure TASSCGLanguages.SaveToStream(AStream: TStream);
@@ -727,10 +759,28 @@ end;
 
 { TASSCGIDStores }
 
+function TASSCGIDStores.Add(const Value: string): NativeInt;
+begin
+  result := inherited;
+  FProject.HasChanged := true;
+end;
+
 constructor TASSCGIDStores.Create(AProject: TASSCGProject);
 begin
   inherited Create;
   FProject := AProject;
+end;
+
+procedure TASSCGIDStores.Delete(Index: NativeInt);
+begin
+  inherited;
+  FProject.HasChanged := true;
+end;
+
+procedure TASSCGIDStores.Insert(Index: NativeInt; const Value: string);
+begin
+  inherited;
+  FProject.HasChanged := true;
 end;
 
 procedure TASSCGIDStores.LoadFromStream(AStream: TStream);
@@ -750,7 +800,13 @@ begin
 
   clear;
   for i := 1 to Nb do
-    add(LoadStringFromStream(AStream, TEncoding.UTF8));
+    Add(LoadStringFromStream(AStream, TEncoding.UTF8));
+end;
+
+function TASSCGIDStores.Remove(const Value: string): NativeInt;
+begin
+  result := inherited;
+  FProject.HasChanged := true;
 end;
 
 procedure TASSCGIDStores.SaveToStream(AStream: TStream);
