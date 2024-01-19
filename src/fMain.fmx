@@ -12,8 +12,8 @@ object frmMain: TfrmMain
   OnDestroy = FormDestroy
   DesignerMasterStyle = 0
   object MainMenu1: TMainMenu
-    Left = 184
-    Top = 192
+    Left = 384
+    Top = 104
     object mnuSystemMacOS: TMenuItem
       Text = 'mnuSystemMacOS'
     end
@@ -56,6 +56,11 @@ object frmMain: TfrmMain
         Locked = True
         Text = '&Options'
         OnClick = mnuOutilsOptionsClick
+      end
+      object mnuOutilsReloadDBStores: TMenuItem
+        Locked = True
+        Text = '&T'#233'l'#233'charger les magasins d'#39'applications'
+        OnClick = mnuOutilsReloadDBStoresClick
       end
     end
     object mnuAide: TMenuItem
@@ -101,7 +106,188 @@ object frmMain: TfrmMain
         'license.')
     onURLClick = OlfAboutDialog1URLClick
     Langue = FR
-    Left = 312
-    Top = 232
+    Left = 512
+    Top = 104
+  end
+  object lHomeScreen: TLayout
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 480.000000000000000000
+    Size.PlatformDefault = False
+    Visible = False
+    TabOrder = 2
+    object lBoutonsMenu: TLayout
+      Align = Center
+      Size.Width = 200.000000000000000000
+      Size.Height = 73.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object btnNouveau: TButton
+        Align = Top
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 5.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 190.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Nouveau'
+        TextSettings.Trimming = None
+        OnClick = mnuFichierNouveauClick
+      end
+      object btnOuvrir: TButton
+        Align = Top
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 5.000000000000000000
+        Position.Y = 37.000000000000000000
+        Size.Width = 190.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Ouvrir'
+        TextSettings.Trimming = None
+        OnClick = mnuFichierOuvrirClick
+      end
+    end
+  end
+  object lProjectScreen: TLayout
+    Align = Client
+    Size.Width = 640.000000000000000000
+    Size.Height = 480.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    object tcProject: TTabControl
+      Align = Client
+      Size.Width = 640.000000000000000000
+      Size.Height = 440.000000000000000000
+      Size.PlatformDefault = False
+      TabIndex = 0
+      TabOrder = 0
+      TabPosition = PlatformDefault
+      Sizes = (
+        640s
+        414s
+        640s
+        414s
+        640s
+        414s
+        640s
+        414s)
+      object tiProjectStores: TTabItem
+        CustomIcon = <
+          item
+          end>
+        TextSettings.Trimming = None
+        IsSelected = True
+        Size.Width = 147.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'Magasins d'#39'applications'
+      end
+      object tiProjectLanguages: TTabItem
+        CustomIcon = <
+          item
+          end>
+        TextSettings.Trimming = None
+        IsSelected = False
+        Size.Width = 64.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'Langues'
+      end
+      object tiBackground: TTabItem
+        CustomIcon = <
+          item
+          end>
+        TextSettings.Trimming = None
+        IsSelected = False
+        Size.Width = 47.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'Fond'
+      end
+      object tiProjectImages: TTabItem
+        CustomIcon = <
+          item
+          end>
+        TextSettings.Trimming = None
+        IsSelected = False
+        Size.Width = 109.000000000000000000
+        Size.Height = 26.000000000000000000
+        Size.PlatformDefault = False
+        StyleLookup = ''
+        TabOrder = 0
+        Text = 'Captures d'#39#233'cran'
+      end
+    end
+    object tbFooter: TToolBar
+      Align = Bottom
+      Position.Y = 440.000000000000000000
+      Size.Width = 640.000000000000000000
+      Size.Height = 40.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      object btnSave: TButton
+        Align = Right
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 465.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = 'Enregistrer'
+        TextSettings.Trimming = None
+        OnClick = mnuFichierEnregistrerClick
+      end
+      object btnClose: TButton
+        Align = Right
+        Cancel = True
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 555.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 80.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Fermer'
+        TextSettings.Trimming = None
+        OnClick = mnuFichierFermerClick
+      end
+      object btnExport: TButton
+        Align = Right
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 5.000000000000000000
+        Margins.Right = 5.000000000000000000
+        Margins.Bottom = 5.000000000000000000
+        Position.X = 355.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 100.000000000000000000
+        Size.Height = 30.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'Generer Images'
+        TextSettings.Trimming = None
+        OnClick = btnExportClick
+      end
+    end
   end
 end
