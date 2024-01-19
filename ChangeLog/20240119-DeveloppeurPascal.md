@@ -12,4 +12,4 @@
 
 Fin de stream sur un freeze de l'IDE sans sauvegarde des modifications en cours au niveau de TASSCGBitmap, TASSCGLanguages (remplaçant TASSCGLanguageList) et l'ajout du "Project" dans la liste des magasins.
 
-Les données archivées dans ce lot de COMMIT ne contiennent donc pas ces modifications.
+Une récupération post stream du fichier dans ./_restored a permi de ne perdre que la partie TBitmap des modifications du jour. Elles seront resaisies avant le stream suivant.
