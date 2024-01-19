@@ -5,7 +5,7 @@ interface
 {
   Fichier projet
 
-  Liste de captures d'écrans (ou images) pour un type d'appareil/OS + par langue
+  Liste de captures d'Ã©crans (ou images) pour un type d'appareil/OS + par langue
 
   Options du projet :
   - type de fond : uni + couleur ou image + Tile ou image + Stretch
@@ -15,7 +15,7 @@ interface
 
 }
 uses
-  // TODO : conditionner l'unité FMX/VCL.Graphics en fonction du framework
+  // TODO : conditionner l'unitÃ© FMX/VCL.Graphics en fonction du framework
   FMX.graphics,
   System.Messaging,
   System.UITypes,
@@ -77,27 +77,9 @@ type
     procedure SaveToStream(AStream: TStream);
   end;
 
-  TASSCGLanguage = class
+  TASSCGLanguages = class(TList<string>)
   private const
-    CVersion = 1;
-
-  var
-    FText: string;
-    FProject: TASSCGProject;
-    procedure SetText(const Value: string);
-    procedure SetProject(const Value: TASSCGProject);
-  protected
-  public
-    property Text: string read FText write SetText;
-    property Project: TASSCGProject read FProject write SetProject;
-    constructor Create(AProject: TASSCGProject);
-    procedure LoadFromStream(AStream: TStream);
-    procedure SaveToStream(AStream: TStream);
-  end;
-
-  TASSCGLanguageList = class(TObjectList<TASSCGLanguage>)
-  private const
-    CVersion = 1;
+    CVersion = 2;
 
   var
     FProject: TASSCGProject;
@@ -139,11 +121,17 @@ type
 
   TASSCGEffect = (None, Shadow, Glow);
 
-  TASSCGIDStores = class(tlist<string>)
+  TASSCGIDStores = class(TList<string>)
   private const
     CVersion = 1;
+
+  var
+    FProject: TASSCGProject;
+    procedure SetProject(const Value: TASSCGProject);
   protected
   public
+    property Project: TASSCGProject read FProject write SetProject;
+    constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
   end;
@@ -156,7 +144,7 @@ type
     FBitmaps: TASSCGBitmapList;
     FBackground: TASSCGBackground;
     FEffect: TASSCGEffect;
-    FLanguages: TASSCGLanguageList;
+    FLanguages: TASSCGLanguages;
     FHasChanged: boolean;
     FFileName: string;
     FStores: TASSCGIDStores;
@@ -164,14 +152,14 @@ type
     procedure SetBackground(const Value: TASSCGBackground);
     procedure SetBitmaps(const Value: TASSCGBitmapList);
     procedure SetEffect(const Value: TASSCGEffect);
-    procedure SetLanguages(const Value: TASSCGLanguageList);
+    procedure SetLanguages(const Value: TASSCGLanguages);
     procedure SetHasChanged(const Value: boolean);
     function GetProjectName: string;
     procedure SetFilename(const Value: string);
   protected
   public
     property Bitmaps: TASSCGBitmapList read FBitmaps write SetBitmaps;
-    property Languages: TASSCGLanguageList read FLanguages write SetLanguages;
+    property Languages: TASSCGLanguages read FLanguages write SetLanguages;
     property Background: TASSCGBackground read FBackground write SetBackground;
     property Effect: TASSCGEffect read FEffect write SetEffect;
     property Stores: TASSCGIDStores read FStores write SetStores;
@@ -326,77 +314,15 @@ begin
     FProject.HasChanged := true;
 end;
 
-{ TASSCGLanguage }
+{ TASSCGLanguages }
 
-constructor TASSCGLanguage.Create(AProject: TASSCGProject);
-begin
-  inherited Create;
-  FText := '';
-  FProject := AProject;
-end;
-
-procedure TASSCGLanguage.LoadFromStream(AStream: TStream);
-var
-  Version: byte;
-begin
-  if not assigned(AStream) then
-    raise exception.Create('Need a stream instance to load from.');
-
-  if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
-    raise exception.Create
-      ('Can''t load this project file. Please update this program.');
-
-  try
-    FText := LoadStringFromStream(AStream);
-  except
-    raise exception.Create('Wrong file format !');
-  end;
-end;
-
-procedure TASSCGLanguage.SaveToStream(AStream: TStream);
-var
-  Version: byte;
-begin
-  if not assigned(AStream) then
-    raise exception.Create('Need a stream instance to load from.');
-
-  Version := CVersion;
-  if (AStream.writedata(Version) <> sizeof(Version)) then
-    raise exception.Create
-      ('Can''t save this project file. No enough space on the disk.');
-
-  SaveStringToStream(FText, AStream);
-end;
-
-procedure TASSCGLanguage.SetProject(const Value: TASSCGProject);
-begin
-  if FProject = Value then
-    exit;
-
-  FProject := Value;
-  if assigned(FProject) then
-    FProject.HasChanged := true;
-end;
-
-procedure TASSCGLanguage.SetText(const Value: string);
-begin
-  if FText = Value then
-    exit;
-
-  FText := Value;
-  if assigned(FProject) then
-    FProject.HasChanged := true;
-end;
-
-{ TASSCGLanguageList }
-
-constructor TASSCGLanguageList.Create(AProject: TASSCGProject);
+constructor TASSCGLanguages.Create(AProject: TASSCGProject);
 begin
   inherited Create;
   FProject := AProject;
 end;
 
-procedure TASSCGLanguageList.LoadFromStream(AStream: TStream);
+procedure TASSCGLanguages.LoadFromStream(AStream: TStream);
 var
   Version: byte;
   i, Nb: int64;
@@ -421,7 +347,7 @@ begin
   end;
 end;
 
-procedure TASSCGLanguageList.SaveToStream(AStream: TStream);
+procedure TASSCGLanguages.SaveToStream(AStream: TStream);
 var
   Version: byte;
   i, Nb: int64;
@@ -439,11 +365,12 @@ begin
     raise exception.Create
       ('Can''t save this project file. No enough space on the disk.');
 
-  for i := 0 to Nb - 1 do
-    self[i].SaveToStream(AStream);
+  if (Version >= 2) then
+    for i := 0 to Nb - 1 do
+      SaveStringToStream(self[i], AStream, TEncoding.UTF8);
 end;
 
-procedure TASSCGLanguageList.SetProject(const Value: TASSCGProject);
+procedure TASSCGLanguages.SetProject(const Value: TASSCGProject);
 begin
   if FProject = Value then
     exit;
@@ -567,9 +494,9 @@ begin
   FBitmaps := TASSCGBitmapList.Create(self);
   FBackground := TASSCGBackground.Create(self);
   FEffect := TASSCGEffect.None;
-  FLanguages := TASSCGLanguageList.Create(self);
+  FLanguages := TASSCGLanguages.Create(self);
   FHasChanged := false;
-  FStores := TASSCGIDStores.Create;
+  FStores := TASSCGIDStores.Create(self);
 
   if not AFromFileName.IsEmpty then
     LoadFromFile(AFromFileName)
@@ -770,7 +697,7 @@ begin
     TASSCGProjectHasChangedMessage.Create(self), true);
 end;
 
-procedure TASSCGProject.SetLanguages(const Value: TASSCGLanguageList);
+procedure TASSCGProject.SetLanguages(const Value: TASSCGLanguages);
 begin
   if FLanguages = Value then
     exit;
@@ -801,6 +728,12 @@ begin
 end;
 
 { TASSCGIDStores }
+
+constructor TASSCGIDStores.Create(AProject: TASSCGProject);
+begin
+  inherited;
+  FProject := AProject;
+end;
 
 procedure TASSCGIDStores.LoadFromStream(AStream: TStream);
 var
@@ -843,6 +776,11 @@ begin
 
   for i := 0 to Nb - 1 do
     SaveStringToStream(self[i], AStream, TEncoding.UTF8);
+end;
+
+procedure TASSCGIDStores.SetProject(const Value: TASSCGProject);
+begin
+  FProject := Value;
 end;
 
 end.
