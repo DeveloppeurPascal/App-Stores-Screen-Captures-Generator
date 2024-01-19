@@ -17,7 +17,10 @@ uses
   Olf.FMX.AboutDialog,
   FMX.Menus,
   uProjectASSCG,
-  uProjectASSCGStores, FMX.Controls.Presentation, FMX.StdCtrls, FMX.Layouts,
+  uProjectASSCGStores,
+  FMX.Controls.Presentation,
+  FMX.StdCtrls,
+  FMX.Layouts,
   FMX.TabControl;
 
 type
