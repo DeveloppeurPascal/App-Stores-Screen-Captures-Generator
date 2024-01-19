@@ -5,7 +5,7 @@ interface
 {
   Fichier projet
 
-  Liste de captures d'Ã©crans (ou images) pour un type d'appareil/OS + par langue
+  Liste de captures d'écrans (ou images) pour un type d'appareil/OS + par langue
 
   Options du projet :
   - type de fond : uni + couleur ou image + Tile ou image + Stretch
@@ -15,7 +15,7 @@ interface
 
 }
 uses
-  // TODO : conditionner l'unitÃ© FMX/VCL.Graphics en fonction du framework
+  // TODO : conditionner l'unité FMX/VCL.Graphics en fonction du framework
   FMX.graphics,
   System.Messaging,
   System.UITypes,
@@ -204,7 +204,7 @@ begin
 
   if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
     raise exception.Create
-      ('Can''t load this project file. Please update this program.');
+      ('Can''t load this project file. Please update the program.');
 
   FBitmap.free;
   try
@@ -268,7 +268,7 @@ begin
 
   if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
     raise exception.Create
-      ('Can''t load this project file. Please update this program.');
+      ('Can''t load this project file. Please update the program.');
 
   if (AStream.readdata(Nb) <> sizeof(Nb)) then
     raise exception.Create('Wrong file format !');
@@ -326,25 +326,20 @@ procedure TASSCGLanguages.LoadFromStream(AStream: TStream);
 var
   Version: byte;
   i, Nb: int64;
-  ln: TASSCGLanguage;
 begin
   if not assigned(AStream) then
     raise exception.Create('Need a stream instance to load from.');
 
   if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
     raise exception.Create
-      ('Can''t load this project file. Please update this program.');
+      ('Can''t load this project file. Please update th program.');
 
   if (AStream.readdata(Nb) <> sizeof(Nb)) then
     raise exception.Create('Wrong file format !');
 
   clear;
   for i := 1 to Nb do
-  begin
-    ln := TASSCGLanguage.Create(FProject);
-    ln.LoadFromStream(AStream);
-    add(ln);
-  end;
+    add  (LoadStringFromStream(AStream, TEncoding.UTF8));
 end;
 
 procedure TASSCGLanguages.SaveToStream(AStream: TStream);
@@ -365,9 +360,8 @@ begin
     raise exception.Create
       ('Can''t save this project file. No enough space on the disk.');
 
-  if (Version >= 2) then
-    for i := 0 to Nb - 1 do
-      SaveStringToStream(self[i], AStream, TEncoding.UTF8);
+  for i := 0 to Nb - 1 do
+    SaveStringToStream(self[i], AStream, TEncoding.UTF8);
 end;
 
 procedure TASSCGLanguages.SetProject(const Value: TASSCGProject);
@@ -406,7 +400,7 @@ begin
 
   if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
     raise exception.Create
-      ('Can''t load this project file. Please update this program.');
+      ('Can''t load this project file. Please update the program.');
 
   if (AStream.read(FColor, sizeof(FColor)) <> sizeof(FColor)) then
     raise exception.Create('Wrong file format !');
@@ -563,7 +557,7 @@ begin
 
   if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
     raise exception.Create
-      ('Can''t load this project file. Please update this program.');
+      ('Can''t load this project file. Please update the program.');
 
   FBitmaps.LoadFromStream(AStream);
 
@@ -708,7 +702,11 @@ end;
 
 procedure TASSCGProject.SetStores(const Value: TASSCGIDStores);
 begin
+  if FStores = Value then
+    exit;
+
   FStores := Value;
+  HasChanged := true;
 end;
 
 { TASSCGProjectHasChanged }
@@ -731,7 +729,7 @@ end;
 
 constructor TASSCGIDStores.Create(AProject: TASSCGProject);
 begin
-  inherited;
+  inherited Create;
   FProject := AProject;
 end;
 
@@ -739,21 +737,20 @@ procedure TASSCGIDStores.LoadFromStream(AStream: TStream);
 var
   Version: byte;
   i, Nb: int64;
-  s: string;
 begin
   if not assigned(AStream) then
     raise exception.Create('Need a stream instance to load from.');
 
   if (AStream.readdata(Version) <> sizeof(Version)) or (Version > CVersion) then
     raise exception.Create
-      ('Can''t load this project file. Please update this program.');
+      ('Can''t load this project file. Please update the program.');
 
   if (AStream.readdata(Nb) <> sizeof(Nb)) then
     raise exception.Create('Wrong file format !');
 
   clear;
   for i := 1 to Nb do
-    s := LoadStringFromStream(AStream, TEncoding.UTF8);
+    add(LoadStringFromStream(AStream, TEncoding.UTF8));
 end;
 
 procedure TASSCGIDStores.SaveToStream(AStream: TStream);
@@ -780,7 +777,12 @@ end;
 
 procedure TASSCGIDStores.SetProject(const Value: TASSCGProject);
 begin
+  if FProject = Value then
+    exit;
+
   FProject := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
 end;
 
 end.
