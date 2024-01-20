@@ -715,7 +715,7 @@ begin
     raise exception.Create('Can''t save the project without a filename !');
 
   try
-    fs := TFileStream.Create(fn, fmOpenwrite);
+    fs := TFileStream.Create(fn, fmCreate);
     try
       SaveToStream(fs);
       if (AFileName <> FFileName) then
