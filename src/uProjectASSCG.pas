@@ -201,6 +201,8 @@ type
     procedure SaveToFile(AFileName: string = '');
     constructor Create(AFromFileName: string = '');
     destructor Destroy; override;
+    function hasStore(const AID: string): boolean;
+    function hasLanguage(const ALanguage: string): boolean;
   end;
 
 implementation
@@ -640,6 +642,16 @@ begin
     result := 'Untitled'
   else
     result := tpath.GetFileNameWithoutExtension(FFileName);
+end;
+
+function TASSCGProject.hasLanguage(const ALanguage: string): boolean;
+begin
+  result := (Languages.IndexOf(ALanguage) >= 0);
+end;
+
+function TASSCGProject.hasStore(const AID: string): boolean;
+begin
+  result := (Stores.IndexOf(AID) >= 0);
 end;
 
 procedure TASSCGProject.LoadFromFile(AFileName: string);
