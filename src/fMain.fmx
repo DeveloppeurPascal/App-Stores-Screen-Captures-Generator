@@ -191,6 +191,8 @@ object frmMain: TfrmMain
         StyleLookup = ''
         TabOrder = 0
         Text = 'Magasins d'#39'applications'
+        ExplicitSize.cx = 147.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
       end
       object tiProjectLanguages: TTabItem
         CustomIcon = <
@@ -204,6 +206,8 @@ object frmMain: TfrmMain
         StyleLookup = ''
         TabOrder = 0
         Text = 'Langues'
+        ExplicitSize.cx = 64.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
       end
       object tiBackground: TTabItem
         CustomIcon = <
@@ -217,6 +221,8 @@ object frmMain: TfrmMain
         StyleLookup = ''
         TabOrder = 0
         Text = 'Fond'
+        ExplicitSize.cx = 47.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
       end
       object tiProjectImages: TTabItem
         CustomIcon = <
@@ -230,6 +236,8 @@ object frmMain: TfrmMain
         StyleLookup = ''
         TabOrder = 0
         Text = 'Captures d'#39#233'cran'
+        ExplicitSize.cx = 109.000000000000000000
+        ExplicitSize.cy = 26.000000000000000000
       end
     end
     object tbFooter: TToolBar
@@ -289,5 +297,21 @@ object frmMain: TfrmMain
         OnClick = btnExportClick
       end
     end
+  end
+  object OpenDialog1: TOpenDialog
+    DefaultExt = 'asscg'
+    Filter = 'AppStoresScreenCapturesGenerator|*.asscg'
+    Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
+    Title = 'Ouvrir un projet'
+    Left = 384
+    Top = 200
+  end
+  object SaveDialog1: TSaveDialog
+    DefaultExt = 'asscg'
+    Filter = 'AppStoresScreenCapturesGenerator|*.asscg'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Title = 'Enregistrer le projet sous'
+    Left = 512
+    Top = 200
   end
 end

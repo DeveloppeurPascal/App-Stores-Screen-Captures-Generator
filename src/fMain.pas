@@ -53,6 +53,8 @@ type
     tiProjectLanguages: TTabItem;
     tiBackground: TTabItem;
     mnuOutilsReloadDBStores: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    SaveDialog1: TSaveDialog;
     procedure OlfAboutDialog1URLClick(const AURL: string);
     procedure FormCreate(Sender: TObject);
     procedure mnuFichierQuitterClick(Sender: TObject);
@@ -97,6 +99,7 @@ implementation
 
 uses
   System.Messaging,
+  FMX.DialogService,
   u_urlOpen,
   fOptions,
   System.IOUtils,
@@ -196,7 +199,9 @@ begin
       ('No stores database. Please wait a minute or reload them from "Tools" options.');
 
   tcProject.ActiveTab := tiProjectStores;
+
   // TODO : à compléter
+
   CurrentDisplay := lProjectScreen;
 end;
 
@@ -206,32 +211,65 @@ begin
 end;
 
 procedure TfrmMain.mnuFichierEnregistrerClick(Sender: TObject);
+var
+  filename: string;
 begin
-  // TODO : à compléter
+  if not assigned(CurrentProject) then
+    raise exception.create('No opened projet to save.');
+
+  if CurrentProject.filename.isempty then
+  begin
+    // TODO : restaurer le précédent chemin utilisé
+    SaveDialog1.InitialDir := tpath.GetDocumentsPath;
+    SaveDialog1.filename := '';
+    if SaveDialog1.Execute then
+    begin
+      // TODO : sauver le chemin utilisé pour le proposer la fois suivante
+      filename := SaveDialog1.filename;
+      if tpath.GetExtension(filename).ToLower <> '.asscg' then
+        filename := tpath.GetFileNameWithoutExtension(filename) + '.asscg';
+
+      CurrentProject.SaveToFile(filename);
+    end;
+  end
+  else
+    CurrentProject.SaveToFile;
 end;
 
 procedure TfrmMain.mnuFichierFermerClick(Sender: TObject);
 begin
   CurrentProject := nil;
 
-  InitFormTitle;
+  GoToHomeScreen;
 end;
 
 procedure TfrmMain.mnuFichierNouveauClick(Sender: TObject);
 begin
   CurrentProject := TASSCGProject.create;
-
-  // TODO : à compléter
+  GoToProjectScreen;
 end;
 
 procedure TfrmMain.mnuFichierOuvrirClick(Sender: TObject);
 var
   filename: string;
 begin
-  // choisir un fichier existant
-  // associer le fichier existant au projet
-  CurrentProject := TASSCGProject.create(filename);
-  // TODO : à compléter
+  // TODO : restaurer le précédent chemin utilisé
+  if string(OpenDialog1.filename).isempty then
+    OpenDialog1.InitialDir := tpath.GetDocumentsPath
+  else
+    OpenDialog1.InitialDir := tpath.GetDirectoryName(OpenDialog1.filename);
+
+  if OpenDialog1.Execute then
+  begin
+    // TODO : sauvegarder le chemin utilisé pour plus tard
+    filename := OpenDialog1.filename;
+    if not tfile.Exists(filename) then
+      raise exception.create('File not found.');
+    if not filename.ToLower.EndsWith('.asscg') then
+      raise exception.create('Wrong file extension. Won''t open it.');
+    CurrentProject := TASSCGProject.create(filename);
+    GoToProjectScreen;
+  end;
 end;
 
 procedure TfrmMain.mnuOutilsOptionsClick(Sender: TObject);
@@ -270,6 +308,8 @@ begin
 
   if assigned(FCurrentDisplay) then
     FCurrentDisplay.visible := true;
+
+  InitFormTitle;
 end;
 
 procedure TfrmMain.SetCurrentProject(const Value: TASSCGProject);
@@ -277,9 +317,15 @@ begin
   if assigned(FCurrentProject) and (FCurrentProject <> Value) then
   begin
     if FCurrentProject.HasChanged then
-    begin
-      // TODO : demander si on veut enregistrer
-    end;
+      tdialogservice.MessageDialog
+        ('Voulez-vous enregistrer ce projet avant de le fermer ?',
+        tmsgdlgtype.mtConfirmation, [tmsgdlgbtn.mbYes, tmsgdlgbtn.mbNo],
+        tmsgdlgbtn.mbYes, 0,
+        procedure(const AModalResult: TModalResult)
+        begin
+          if AModalResult = mrYes then
+            mnuFichierEnregistrerClick(nil);
+        end);
     FCurrentProject.free;
   end;
 
@@ -300,7 +346,7 @@ begin
   DBStores := TASSCGDBStores.create;
 
 {$IFDEF DEBUG}
-  Folder := tpath.combine(tpath.getdocumentspath, 'OlfSoftware-DEBUG',
+  Folder := tpath.combine(tpath.GetDocumentsPath, 'OlfSoftware-DEBUG',
     'ASSCG-DEBUG');
 {$ELSE}
   Folder := tpath.combine(tpath.GetHomePath, 'OlfSoftware', 'ASSCG');
@@ -364,5 +410,6 @@ initialization
 {$IFDEF DEBUG}
   ReportMemoryLeaksOnShutdown := true;
 {$ENDIF}
+tdialogservice.PreferredMode := tdialogservice.TPreferredMode.Sync;
 
 end.
