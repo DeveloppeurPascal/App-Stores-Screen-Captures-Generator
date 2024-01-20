@@ -14,9 +14,11 @@ object dmStoresLanguages: TdmStoresLanguages
     Top = 224
     object fdStoresLanguagesLibelle: TStringField
       FieldName = 'Libelle'
+      Required = True
     end
     object fdStoresLanguagesFolder: TStringField
       FieldName = 'Folder'
+      Required = True
     end
   end
   object FDStanStorageBinLink1: TFDStanStorageBinLink
