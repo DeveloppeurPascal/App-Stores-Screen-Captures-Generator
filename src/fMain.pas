@@ -55,6 +55,10 @@ type
     mnuOutilsReloadDBStores: TMenuItem;
     OpenDialog1: TOpenDialog;
     SaveDialog1: TSaveDialog;
+    sbStores: TVertScrollBox;
+    tbStores: TToolBar;
+    btnStoresSelectAll: TButton;
+    btnStoresUnSelectAll: TButton;
     procedure OlfAboutDialog1URLClick(const AURL: string);
     procedure FormCreate(Sender: TObject);
     procedure mnuFichierQuitterClick(Sender: TObject);
@@ -67,20 +71,24 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure btnExportClick(Sender: TObject);
     procedure mnuOutilsReloadDBStoresClick(Sender: TObject);
+    procedure onStoreChange(Sender: TObject);
+    procedure btnStoresSelectAllClick(Sender: TObject);
+    procedure btnStoresUnSelectAllClick(Sender: TObject);
   private
     FCurrentProject: TASSCGProject;
     FDBStores: TASSCGDBStores;
     FCurrentDisplay: TLayout;
     procedure SetCurrentProject(const Value: TASSCGProject);
-    procedure InitFormTitle(AProject: TASSCGProject = nil);
-    procedure InitProjectMenusOptions;
     procedure SetDBStores(const Value: TASSCGDBStores);
-    procedure InitDBStore(AForceDownload: boolean = false);
     procedure SetCurrentDisplay(const Value: TLayout);
     { Déclarations privées }
   protected
+    procedure InitFormTitle(AProject: TASSCGProject = nil);
+    procedure InitProjectMenusOptions;
+    procedure InitDBStore(AForceDownload: boolean = false);
     procedure GoToHomeScreen;
     procedure GoToProjectScreen;
+    procedure ShowStoreList;
   public
     { Déclarations publiques }
     property CurrentProject: TASSCGProject read FCurrentProject
@@ -109,6 +117,24 @@ procedure TfrmMain.btnExportClick(Sender: TObject);
 begin
   // TODO : à compléter
   showmessage('à faire');
+end;
+
+procedure TfrmMain.btnStoresSelectAllClick(Sender: TObject);
+var
+  o: tcomponent;
+begin
+  for o in sbStores.content.children do
+    if (o is TCheckBox) and not(o as TCheckBox).tagstring.isempty then
+      (o as TCheckBox).ischecked := true;
+end;
+
+procedure TfrmMain.btnStoresUnSelectAllClick(Sender: TObject);
+var
+  o: tcomponent;
+begin
+  for o in sbStores.content.children do
+    if (o is TCheckBox) and not(o as TCheckBox).tagstring.isempty then
+      (o as TCheckBox).ischecked := false;
 end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -172,11 +198,13 @@ begin
     end);
 
   FCurrentDisplay := nil;
+
   // Masque les TLayout servant d'écrans
-  for o in Children do
+  for o in children do
     if (o is TLayout) and
       (string((o as TLayout).Name).ToLower.EndsWith('screen')) then
       (o as TLayout).visible := false;
+
   // Bascule sur l'écran d'accueil
   GoToHomeScreen;
 end;
@@ -193,12 +221,35 @@ begin
 end;
 
 procedure TfrmMain.GoToProjectScreen;
+var
+  o: tcomponent;
+  cb: TCheckBox;
 begin
   if (DBStores.Count = 0) then
     raise exception.create
       ('No stores database. Please wait a minute or reload them from "Tools" options.');
 
   tcProject.ActiveTab := tiProjectStores;
+
+  // Initialisation de l'onglet "stores"
+
+  for o in sbStores.content.children do
+    if (o is TCheckBox) then
+    begin
+      cb := o as TCheckBox;
+      if (not cb.tagstring.isempty) then
+        cb.ischecked := CurrentProject.hasStore(cb.tagstring);
+    end;
+
+  // Initialisation de l'onglet "languages"
+
+  // TODO : à compléter
+
+  // Initialisation de l'onglet "background"
+
+  // TODO : à compléter
+
+  // Initialisation de l'onglet "bitmaps"
 
   // TODO : à compléter
 
@@ -299,6 +350,23 @@ begin
   url_Open_In_Browser(AURL);
 end;
 
+procedure TfrmMain.onStoreChange(Sender: TObject);
+var
+  id: string;
+begin
+  if (Sender is TCheckBox) and not(Sender as TCheckBox).tagstring.isempty then
+  begin
+    id := (Sender as TCheckBox).tagstring;
+    if (Sender as TCheckBox).ischecked then
+    begin
+      if not CurrentProject.hasStore(id) then
+        CurrentProject.stores.Add(id);
+    end
+    else if CurrentProject.hasStore(id) then
+      CurrentProject.stores.Remove(id);
+  end;
+end;
+
 procedure TfrmMain.SetCurrentDisplay(const Value: TLayout);
 begin
   if assigned(FCurrentDisplay) then
@@ -338,6 +406,35 @@ begin
   FDBStores := Value;
 end;
 
+procedure TfrmMain.ShowStoreList;
+var
+  Store: TASSCGDBStore;
+  i: integer;
+  o: TFMXObject;
+begin
+  for i := sbStores.content.ChildrenCount - 1 downto 0 do
+  begin
+    o := sbStores.content.children[i];
+    if (o is TCheckBox) and ((o as TCheckBox).tag = 1) then
+      o.free;
+  end;
+
+  if DBStores.Count > 0 then
+    for Store in DBStores do
+      with TCheckBox.create(self) do
+      begin
+        Parent := sbStores;
+        Align := talignlayout.Top;
+        Margins.Left := 5;
+        Margins.Top := 5;
+        Margins.Right := 5;
+        Margins.Bottom := 5;
+        Text := Store.Name;
+        OnChange := onStoreChange;
+        tagstring := Store.id;
+      end;
+end;
+
 procedure TfrmMain.InitDBStore(AForceDownload: boolean);
 var
   Folder, filename: string;
@@ -360,12 +457,16 @@ begin
   filename := tpath.combine(Folder, 'asscg.asscgstores');
 {$ENDIF}
   if tfile.Exists(filename) and (not AForceDownload) then
-    DBStores.LoadFromFile(filename)
+  begin
+    DBStores.LoadFromFile(filename);
+    ShowStoreList;
+  end
   else
     DBStores.LoadFromURL(CASSCGDBURL,
       procedure
       begin
         DBStores.SaveToFile(filename);
+        ShowStoreList;
         showmessage('La base des magasins d''application a été mise à jour.');
       end,
       procedure

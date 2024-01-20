@@ -193,6 +193,53 @@ object frmMain: TfrmMain
         Text = 'Magasins d'#39'applications'
         ExplicitSize.cx = 147.000000000000000000
         ExplicitSize.cy = 26.000000000000000000
+        object sbStores: TVertScrollBox
+          Align = Client
+          Size.Width = 640.000000000000000000
+          Size.Height = 374.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Viewport.Width = 640.000000000000000000
+          Viewport.Height = 374.000000000000000000
+        end
+        object tbStores: TToolBar
+          Size.Width = 640.000000000000000000
+          Size.Height = 40.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          object btnStoresSelectAll: TButton
+            Align = Left
+            Margins.Left = 5.000000000000000000
+            Margins.Top = 5.000000000000000000
+            Margins.Right = 5.000000000000000000
+            Margins.Bottom = 5.000000000000000000
+            Position.X = 5.000000000000000000
+            Position.Y = 5.000000000000000000
+            Size.Width = 160.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+            Text = 'S'#233'lectionner tout'
+            TextSettings.Trimming = None
+            OnClick = btnStoresSelectAllClick
+          end
+          object btnStoresUnSelectAll: TButton
+            Align = Left
+            Margins.Left = 5.000000000000000000
+            Margins.Top = 5.000000000000000000
+            Margins.Right = 5.000000000000000000
+            Margins.Bottom = 5.000000000000000000
+            Position.X = 175.000000000000000000
+            Position.Y = 5.000000000000000000
+            Size.Width = 160.000000000000000000
+            Size.Height = 30.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 1
+            Text = 'D'#233's'#233'lectionner tout'
+            TextSettings.Trimming = None
+            OnClick = btnStoresUnSelectAllClick
+          end
+        end
       end
       object tiProjectLanguages: TTabItem
         CustomIcon = <
