@@ -60,6 +60,10 @@ type
     btnStoresSelectAll: TButton;
     btnStoresUnSelectAll: TButton;
     mnuOutilsLanguesDesProjets: TMenuItem;
+    sbLanguages: TVertScrollBox;
+    tbLanguages: TToolBar;
+    btnLanguagesSelectAll: TButton;
+    btnLanguagesUnSelectAll: TButton;
     procedure OlfAboutDialog1URLClick(const AURL: string);
     procedure FormCreate(Sender: TObject);
     procedure mnuFichierQuitterClick(Sender: TObject);
@@ -72,10 +76,11 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure btnExportClick(Sender: TObject);
     procedure mnuOutilsReloadDBStoresClick(Sender: TObject);
-    procedure onStoreChange(Sender: TObject);
     procedure btnStoresSelectAllClick(Sender: TObject);
     procedure btnStoresUnSelectAllClick(Sender: TObject);
     procedure mnuOutilsLanguesDesProjetsClick(Sender: TObject);
+    procedure btnLanguagesSelectAllClick(Sender: TObject);
+    procedure btnLanguagesUnSelectAllClick(Sender: TObject);
   private
     FCurrentProject: TASSCGProject;
     FDBStores: TASSCGDBStores;
@@ -91,6 +96,9 @@ type
     procedure GoToHomeScreen;
     procedure GoToProjectScreen;
     procedure ShowStoreList;
+    procedure ShowLanguageList;
+    procedure onStoreChange(Sender: TObject);
+    procedure onLanguageChange(Sender: TObject);
   public
     { Déclarations publiques }
     property CurrentProject: TASSCGProject read FCurrentProject
@@ -113,12 +121,32 @@ uses
   u_urlOpen,
   fOptions,
   System.IOUtils,
-  Olf.FMX.AboutDialogForm, fStoresLanguages;
+  Olf.FMX.AboutDialogForm,
+  fStoresLanguages,
+  uDMStoresLanguages;
 
 procedure TfrmMain.btnExportClick(Sender: TObject);
 begin
   // TODO : à compléter
   showmessage('à faire');
+end;
+
+procedure TfrmMain.btnLanguagesSelectAllClick(Sender: TObject);
+var
+  o: tcomponent;
+begin
+  for o in sbLanguages.content.children do
+    if (o is TCheckBox) and not(o as TCheckBox).tagstring.isempty then
+      (o as TCheckBox).ischecked := true;
+end;
+
+procedure TfrmMain.btnLanguagesUnSelectAllClick(Sender: TObject);
+var
+  o: tcomponent;
+begin
+  for o in sbLanguages.content.children do
+    if (o is TCheckBox) and not(o as TCheckBox).tagstring.isempty then
+      (o as TCheckBox).ischecked := false;
 end;
 
 procedure TfrmMain.btnStoresSelectAllClick(Sender: TObject);
@@ -235,17 +263,11 @@ begin
 
   // Initialisation de l'onglet "stores"
 
-  for o in sbStores.content.children do
-    if (o is TCheckBox) then
-    begin
-      cb := o as TCheckBox;
-      if (not cb.tagstring.isempty) then
-        cb.ischecked := CurrentProject.hasStore(cb.tagstring);
-    end;
+  ShowStoreList;
 
   // Initialisation de l'onglet "languages"
 
-  // TODO : à compléter
+  ShowLanguageList;
 
   // Initialisation de l'onglet "background"
 
@@ -364,6 +386,23 @@ begin
   url_Open_In_Browser(AURL);
 end;
 
+procedure TfrmMain.onLanguageChange(Sender: TObject);
+var
+  folder: string;
+begin
+  if (Sender is TCheckBox) and not(Sender as TCheckBox).tagstring.isempty then
+  begin
+    folder := (Sender as TCheckBox).tagstring;
+    if (Sender as TCheckBox).ischecked then
+    begin
+      if not CurrentProject.hasLanguage(folder) then
+        CurrentProject.Languages.Add(folder);
+    end
+    else if CurrentProject.hasLanguage(folder) then
+      CurrentProject.Languages.Remove(folder);
+  end;
+end;
+
 procedure TfrmMain.onStoreChange(Sender: TObject);
 var
   id: string;
@@ -420,6 +459,46 @@ begin
   FDBStores := Value;
 end;
 
+procedure TfrmMain.ShowLanguageList;
+var
+  i: integer;
+  o: TFMXObject;
+  dm: TdmStoresLanguages;
+begin
+  for i := sbLanguages.content.ChildrenCount - 1 downto 0 do
+  begin
+    o := sbLanguages.content.children[i];
+    if (o is TCheckBox) and ((o as TCheckBox).tag = 2) then
+      o.free;
+  end;
+
+  dm := TdmStoresLanguages.create(self);
+  try
+    dm.fdStoresLanguages.first;
+    while not dm.fdStoresLanguages.eof do
+    begin
+      with TCheckBox.create(self) do
+      begin
+        Parent := sbLanguages;
+        Align := talignlayout.Top;
+        Margins.Left := 5;
+        Margins.Top := 5;
+        Margins.Right := 5;
+        Margins.Bottom := 5;
+        Text := dm.fdStoresLanguages.fieldbyname('Libelle').AsString;
+        tagstring := dm.fdStoresLanguages.fieldbyname('Folder').AsString;
+        tag := 2;
+        OnChange := onLanguageChange;
+        ischecked := assigned(CurrentProject) and
+          CurrentProject.hasLanguage(tagstring);
+      end;
+      dm.fdStoresLanguages.next;
+    end;
+  finally
+    dm.free;
+  end;
+end;
+
 procedure TfrmMain.ShowStoreList;
 var
   Store: TASSCGDBStore;
@@ -444,31 +523,34 @@ begin
         Margins.Right := 5;
         Margins.Bottom := 5;
         Text := Store.Name;
-        OnChange := onStoreChange;
         tagstring := Store.id;
+        tag := 1;
+        OnChange := onStoreChange;
+        ischecked := assigned(CurrentProject) and
+          CurrentProject.hasStore(tagstring);
       end;
 end;
 
 procedure TfrmMain.InitDBStore(AForceDownload: boolean);
 var
-  Folder, filename: string;
+  folder, filename: string;
 begin
   DBStores.free;
   DBStores := TASSCGDBStores.create;
 
 {$IFDEF DEBUG}
-  Folder := tpath.combine(tpath.GetDocumentsPath, 'OlfSoftware-DEBUG',
+  folder := tpath.combine(tpath.GetDocumentsPath, 'OlfSoftware-DEBUG',
     'ASSCG-DEBUG');
 {$ELSE}
-  Folder := tpath.combine(tpath.GetHomePath, 'OlfSoftware', 'ASSCG');
+  folder := tpath.combine(tpath.GetHomePath, 'OlfSoftware', 'ASSCG');
 {$ENDIF}
-  if not TDirectory.Exists(Folder) then
-    TDirectory.CreateDirectory(Folder);
+  if not TDirectory.Exists(folder) then
+    TDirectory.CreateDirectory(folder);
 
 {$IFDEF DEBUG}
-  filename := tpath.combine(Folder, 'asscg-debug.asscgstores');
+  filename := tpath.combine(folder, 'asscg-debug.asscgstores');
 {$ELSE}
-  filename := tpath.combine(Folder, 'asscg.asscgstores');
+  filename := tpath.combine(folder, 'asscg.asscgstores');
 {$ENDIF}
   if tfile.Exists(filename) and (not AForceDownload) then
   begin
