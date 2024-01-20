@@ -59,6 +59,7 @@ type
     tbStores: TToolBar;
     btnStoresSelectAll: TButton;
     btnStoresUnSelectAll: TButton;
+    mnuOutilsLanguesDesProjets: TMenuItem;
     procedure OlfAboutDialog1URLClick(const AURL: string);
     procedure FormCreate(Sender: TObject);
     procedure mnuFichierQuitterClick(Sender: TObject);
@@ -74,6 +75,7 @@ type
     procedure onStoreChange(Sender: TObject);
     procedure btnStoresSelectAllClick(Sender: TObject);
     procedure btnStoresUnSelectAllClick(Sender: TObject);
+    procedure mnuOutilsLanguesDesProjetsClick(Sender: TObject);
   private
     FCurrentProject: TASSCGProject;
     FDBStores: TASSCGDBStores;
@@ -111,7 +113,7 @@ uses
   u_urlOpen,
   fOptions,
   System.IOUtils,
-  Olf.FMX.AboutDialogForm;
+  Olf.FMX.AboutDialogForm, fStoresLanguages;
 
 procedure TfrmMain.btnExportClick(Sender: TObject);
 begin
@@ -320,6 +322,18 @@ begin
       raise exception.create('Wrong file extension. Won''t open it.');
     CurrentProject := TASSCGProject.create(filename);
     GoToProjectScreen;
+  end;
+end;
+
+procedure TfrmMain.mnuOutilsLanguesDesProjetsClick(Sender: TObject);
+var
+  frm: TfrmStoresLanguages;
+begin
+  frm := TfrmStoresLanguages.create(self);
+  try
+    frm.showmodal;
+  finally
+    frm.free;
   end;
 end;
 

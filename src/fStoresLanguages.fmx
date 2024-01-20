@@ -1,0 +1,95 @@
+object frmStoresLanguages: TfrmStoresLanguages
+  Left = 0
+  Top = 0
+  Caption = 'Langues des magasins d'#39'applications'
+  ClientHeight = 480
+  ClientWidth = 640
+  Position = MainFormCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  DesignerMasterStyle = 0
+  object StringGrid1: TStringGrid
+    Align = Client
+    CanFocus = True
+    ClipChildren = True
+    Size.Width = 640.000000000000000000
+    Size.Height = 415.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Viewport.Width = 636.000000000000000000
+    Viewport.Height = 390.000000000000000000
+  end
+  object BindNavigator1: TBindNavigator
+    Align = Bottom
+    Position.Y = 415.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    DataSource = BindSourceDB1
+    xRadius = 4.000000000000000000
+    yRadius = 4.000000000000000000
+  end
+  object ToolBar1: TToolBar
+    Align = Bottom
+    Position.Y = 440.000000000000000000
+    Size.Width = 640.000000000000000000
+    Size.Height = 40.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    object btnSave: TButton
+      Align = Right
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Position.X = 465.000000000000000000
+      Position.Y = 5.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Ok'
+      TextSettings.Trimming = None
+      OnClick = btnSaveClick
+    end
+    object btnCancel: TButton
+      Align = Right
+      Cancel = True
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Position.X = 555.000000000000000000
+      Position.Y = 5.000000000000000000
+      Size.Width = 80.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'Annuler'
+      TextSettings.Trimming = None
+      OnClick = btnCancelClick
+    end
+  end
+  object BindSourceDB1: TBindSourceDB
+    DataSet = dmStoresLanguages.fdStoresLanguages
+    ScopeMappings = <>
+    Left = 304
+    Top = 224
+  end
+  object BindingsList1: TBindingsList
+    Methods = <>
+    OutputConverters = <>
+    Left = 20
+    Top = 5
+    object LinkGridToDataSourceBindSourceDB1: TLinkGridToDataSource
+      Category = 'Liaisons rapides'
+      DataSource = BindSourceDB1
+      GridControl = StringGrid1
+      Columns = <>
+    end
+  end
+end

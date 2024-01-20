@@ -57,6 +57,11 @@ object frmMain: TfrmMain
         Text = '&Options'
         OnClick = mnuOutilsOptionsClick
       end
+      object mnuOutilsLanguesDesProjets: TMenuItem
+        Locked = True
+        Text = 'Langues des projets'
+        OnClick = mnuOutilsLanguesDesProjetsClick
+      end
       object mnuOutilsReloadDBStores: TMenuItem
         Locked = True
         Text = '&T'#233'l'#233'charger les magasins d'#39'applications'

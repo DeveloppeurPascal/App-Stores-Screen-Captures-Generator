@@ -17,7 +17,9 @@ uses
   Olf.RTL.Streams in '..\lib-externes\librairies\Olf.RTL.Streams.pas',
   Olf.RTL.SystemAppearance in '..\lib-externes\librairies\Olf.RTL.SystemAppearance.pas',
   uProjectASSCGStores in '..\lib-externes\ASSCG-Data-Admin\src\uProjectASSCGStores.pas',
-  u_download in '..\lib-externes\librairies\u_download.pas';
+  u_download in '..\lib-externes\librairies\u_download.pas',
+  uDMStoresLanguages in 'uDMStoresLanguages.pas' {dmStoresLanguages: TDataModule},
+  fStoresLanguages in 'fStoresLanguages.pas' {frmStoresLanguages};
 
 {$R *.res}
 

@@ -376,6 +376,15 @@
         <DCCReference Include="..\lib-externes\librairies\Olf.RTL.SystemAppearance.pas"/>
         <DCCReference Include="..\lib-externes\ASSCG-Data-Admin\src\uProjectASSCGStores.pas"/>
         <DCCReference Include="..\lib-externes\librairies\u_download.pas"/>
+        <DCCReference Include="uDMStoresLanguages.pas">
+            <Form>dmStoresLanguages</Form>
+            <FormType>dfm</FormType>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="fStoresLanguages.pas">
+            <Form>frmStoresLanguages</Form>
+            <FormType>fmx</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
