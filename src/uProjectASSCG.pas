@@ -115,7 +115,12 @@ type
     procedure Delete(Index: NativeInt);
   end;
 
-  TASSCGFillKind = (Solid, BitmapTiled, BitmapStretched);
+  TASSCGFillKind = (Solid, BitmapTiled, BitmapStretched, BitmapCroped);
+
+  TASSCGFillKindHelper = record helper for TASSCGFillKind
+    function ToString: string;
+    function Value: integer;
+  end;
 
   TASSCGBackground = class
   private const
@@ -140,6 +145,8 @@ type
     constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
+    procedure BitmapLoadFromFile(AFilename: string);
+    procedure BitmapClear;
     destructor Destroy; override;
   end;
 
@@ -196,9 +203,9 @@ type
     property Name: string read GetProjectName;
     property Filename: string read FFileName write SetFilename;
     procedure LoadFromStream(AStream: TStream);
-    procedure LoadFromFile(AFileName: string);
+    procedure LoadFromFile(AFilename: string);
     procedure SaveToStream(AStream: TStream);
-    procedure SaveToFile(AFileName: string = '');
+    procedure SaveToFile(AFilename: string = '');
     constructor Create(AFromFileName: string = '');
     destructor Destroy; override;
     function hasStore(const AID: string): boolean;
@@ -504,6 +511,24 @@ end;
 
 { TASSCGBackground }
 
+procedure TASSCGBackground.BitmapClear;
+begin
+  freeandnil(Bitmap);
+
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBackground.BitmapLoadFromFile(AFilename: string);
+begin
+  if not assigned(Bitmap) then
+    Bitmap := TBitmap.Create;
+  Bitmap.LoadFromFile(AFilename);
+
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
 constructor TASSCGBackground.Create(AProject: TASSCGProject);
 begin
   inherited Create;
@@ -654,17 +679,17 @@ begin
   result := (Stores.IndexOf(AID) >= 0);
 end;
 
-procedure TASSCGProject.LoadFromFile(AFileName: string);
+procedure TASSCGProject.LoadFromFile(AFilename: string);
 var
   fs: TFileStream;
 begin
-  if AFileName.IsEmpty or (not tfile.Exists(AFileName)) then
+  if AFilename.IsEmpty or (not tfile.Exists(AFilename)) then
     raise exception.Create('File doesn''t exist !');
   try
-    fs := TFileStream.Create(AFileName, fmOpenRead);
+    fs := TFileStream.Create(AFilename, fmOpenRead);
     try
       LoadFromStream(fs);
-      Filename := AFileName;
+      Filename := AFilename;
       HasChanged := false;
     finally
       fs.free;
@@ -713,15 +738,15 @@ begin
   HasChanged := false;
 end;
 
-procedure TASSCGProject.SaveToFile(AFileName: string);
+procedure TASSCGProject.SaveToFile(AFilename: string);
 var
   fs: TFileStream;
   fn: string;
 begin
-  if AFileName.IsEmpty then
+  if AFilename.IsEmpty then
     fn := FFileName
   else
-    fn := AFileName;
+    fn := AFilename;
 
   if fn.IsEmpty then
     raise exception.Create('Can''t save the project without a filename !');
@@ -730,7 +755,7 @@ begin
     fs := TFileStream.Create(fn, fmCreate);
     try
       SaveToStream(fs);
-      if (AFileName <> FFileName) then
+      if (AFilename <> FFileName) then
         Filename := fn;
       HasChanged := false;
     finally
@@ -946,6 +971,29 @@ begin
   FProject := Value;
   if assigned(FProject) then
     FProject.HasChanged := true;
+end;
+
+{ TASSCGFillKindHelper }
+
+function TASSCGFillKindHelper.ToString: string;
+begin
+  case self of
+    TASSCGFillKind.Solid:
+      result := 'couleur';
+    TASSCGFillKind.BitmapTiled:
+      result := 'mosaïque';
+    TASSCGFillKind.BitmapStretched:
+      result := 'étiré';
+    TASSCGFillKind.BitmapCroped:
+      result := 'coupé';
+  else
+    raise exception.Create('No label for this fill kind.');
+  end;
+end;
+
+function TASSCGFillKindHelper.Value: integer;
+begin
+  result := ord(self);
 end;
 
 end.
