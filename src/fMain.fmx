@@ -172,7 +172,7 @@ object frmMain: TfrmMain
       Size.Width = 640.000000000000000000
       Size.Height = 440.000000000000000000
       Size.PlatformDefault = False
-      TabIndex = 1
+      TabIndex = 2
       TabOrder = 0
       TabPosition = PlatformDefault
       Sizes = (
@@ -251,7 +251,7 @@ object frmMain: TfrmMain
           item
           end>
         TextSettings.Trimming = None
-        IsSelected = True
+        IsSelected = False
         Size.Width = 64.000000000000000000
         Size.Height = 26.000000000000000000
         Size.PlatformDefault = False
@@ -313,7 +313,7 @@ object frmMain: TfrmMain
           item
           end>
         TextSettings.Trimming = None
-        IsSelected = False
+        IsSelected = True
         Size.Width = 47.000000000000000000
         Size.Height = 26.000000000000000000
         Size.PlatformDefault = False
@@ -322,6 +322,219 @@ object frmMain: TfrmMain
         Text = 'Fond'
         ExplicitSize.cx = 47.000000000000000000
         ExplicitSize.cy = 26.000000000000000000
+        object sbBackground: TVertScrollBox
+          Align = Client
+          Size.Width = 640.000000000000000000
+          Size.Height = 414.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Viewport.Width = 640.000000000000000000
+          Viewport.Height = 414.000000000000000000
+          object lblBackgroundKind: TLabel
+            Align = Top
+            Margins.Left = 5.000000000000000000
+            Margins.Top = 5.000000000000000000
+            Margins.Right = 5.000000000000000000
+            Position.X = 5.000000000000000000
+            Position.Y = 5.000000000000000000
+            Size.Width = 630.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.Trimming = None
+            Text = 'Type de fond'
+            TabOrder = 1
+          end
+          object cbBackgroundKind: TComboBox
+            Align = Top
+            Items.Strings = (
+              'Couleur')
+            ItemIndex = 0
+            Margins.Left = 5.000000000000000000
+            Margins.Right = 5.000000000000000000
+            Margins.Bottom = 5.000000000000000000
+            Position.X = 5.000000000000000000
+            Position.Y = 22.000000000000000000
+            Size.Width = 630.000000000000000000
+            Size.Height = 22.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 0
+            OnChange = cbBackgroundKindChange
+          end
+          object lBackgroundBitmap: TLayout
+            Align = Top
+            Position.Y = 49.000000000000000000
+            Size.Width = 640.000000000000000000
+            Size.Height = 300.000000000000000000
+            Size.PlatformDefault = False
+            Visible = False
+            TabOrder = 2
+            object lblBackgroundBitmap: TLabel
+              Align = Top
+              Margins.Left = 5.000000000000000000
+              Margins.Top = 5.000000000000000000
+              Margins.Right = 5.000000000000000000
+              Position.X = 5.000000000000000000
+              Position.Y = 5.000000000000000000
+              Size.Width = 630.000000000000000000
+              Size.Height = 17.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.Trimming = None
+              Text = 'Image de fond'
+              TabOrder = 2
+            end
+            object imgBackgroundBitmap: TImageControl
+              Align = Top
+              HitTest = False
+              Margins.Left = 5.000000000000000000
+              Margins.Right = 5.000000000000000000
+              Position.X = 5.000000000000000000
+              Position.Y = 22.000000000000000000
+              Size.Width = 630.000000000000000000
+              Size.Height = 200.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 1
+            end
+            object gplBackgroundBitmap: TGridPanelLayout
+              Align = Top
+              Position.Y = 222.000000000000000000
+              Size.Width = 640.000000000000000000
+              Size.Height = 50.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 0
+              ColumnCollection = <
+                item
+                  Value = 50.000000000000000000
+                end
+                item
+                  Value = 50.000000000000000000
+                end>
+              ControlCollection = <
+                item
+                  Column = 0
+                  Control = btnBackgroundBitmapLoad
+                  Row = 0
+                end
+                item
+                  Column = 1
+                  Control = btnBackgroundBitmapRemove
+                  Row = 0
+                end>
+              RowCollection = <
+                item
+                  Value = 100.000000000000000000
+                end>
+              object btnBackgroundBitmapLoad: TButton
+                Align = Client
+                Margins.Left = 5.000000000000000000
+                Margins.Top = 5.000000000000000000
+                Margins.Right = 5.000000000000000000
+                Margins.Bottom = 5.000000000000000000
+                Size.Width = 310.000000000000000000
+                Size.Height = 40.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 0
+                Text = 'Charger une image'
+                TextSettings.Trimming = None
+                OnClick = btnBackgroundBitmapLoadClick
+              end
+              object btnBackgroundBitmapRemove: TButton
+                Align = Client
+                Margins.Left = 5.000000000000000000
+                Margins.Top = 5.000000000000000000
+                Margins.Right = 5.000000000000000000
+                Margins.Bottom = 5.000000000000000000
+                Size.Width = 310.000000000000000000
+                Size.Height = 40.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 1
+                Text = 'Effacer l'#39'image'
+                TextSettings.Trimming = None
+                OnClick = btnBackgroundBitmapRemoveClick
+              end
+            end
+          end
+          object lBackgroundColor: TLayout
+            Align = Top
+            Position.Y = 49.000000000000000000
+            Size.Width = 640.000000000000000000
+            Size.Height = 300.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 3
+            object lblBackgroundColor: TLabel
+              Align = Top
+              Margins.Left = 5.000000000000000000
+              Margins.Top = 5.000000000000000000
+              Margins.Right = 5.000000000000000000
+              Position.X = 5.000000000000000000
+              Position.Y = 5.000000000000000000
+              Size.Width = 630.000000000000000000
+              Size.Height = 17.000000000000000000
+              Size.PlatformDefault = False
+              TextSettings.Trimming = None
+              Text = 'Couleur du fond'
+              TabOrder = 1
+            end
+            object lBackgroundColorChoice: TLayout
+              Align = Top
+              Margins.Left = 5.000000000000000000
+              Margins.Right = 5.000000000000000000
+              Margins.Bottom = 5.000000000000000000
+              Position.X = 5.000000000000000000
+              Position.Y = 22.000000000000000000
+              Size.Width = 630.000000000000000000
+              Size.Height = 25.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 0
+              object edtBackgroundColor: TEdit
+                Touch.InteractiveGestures = [LongTap, DoubleTap]
+                Align = Left
+                TabOrder = 1
+                Margins.Right = 5.000000000000000000
+                Size.Width = 131.000000000000000000
+                Size.Height = 25.000000000000000000
+                Size.PlatformDefault = False
+                OnChange = edtBackgroundColorChange
+              end
+              object cbBackgroundColor: TColorBox
+                Align = Client
+                Color = claBlack
+                Margins.Left = 5.000000000000000000
+                Size.Width = 489.000000000000000000
+                Size.Height = 25.000000000000000000
+                Size.PlatformDefault = False
+                TabOrder = 2
+              end
+            end
+            object cqBackgroundColor: TColorQuad
+              Alpha = 1.000000000000000000
+              Align = Client
+              ColorBox = cbBackgroundColor
+              Margins.Left = 5.000000000000000000
+              Margins.Top = 5.000000000000000000
+              Margins.Right = 5.000000000000000000
+              Margins.Bottom = 5.000000000000000000
+              Size.Width = 570.000000000000000000
+              Size.Height = 238.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 2
+              OnChange = cqBackgroundColorChange
+            end
+            object cpBackgroundColor: TColorPicker
+              Align = Left
+              ColorQuad = cqBackgroundColor
+              Margins.Left = 5.000000000000000000
+              Margins.Top = 5.000000000000000000
+              Margins.Right = 5.000000000000000000
+              Margins.Bottom = 5.000000000000000000
+              Position.X = 5.000000000000000000
+              Position.Y = 57.000000000000000000
+              Size.Width = 50.000000000000000000
+              Size.Height = 238.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 3
+            end
+          end
+        end
       end
       object tiProjectImages: TTabItem
         CustomIcon = <
@@ -397,7 +610,7 @@ object frmMain: TfrmMain
       end
     end
   end
-  object OpenDialog1: TOpenDialog
+  object OpenDialogProject: TOpenDialog
     DefaultExt = 'asscg'
     Filter = 'AppStoresScreenCapturesGenerator|*.asscg'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
@@ -405,12 +618,19 @@ object frmMain: TfrmMain
     Left = 384
     Top = 200
   end
-  object SaveDialog1: TSaveDialog
+  object SaveDialogProject: TSaveDialog
     DefaultExt = 'asscg'
     Filter = 'AppStoresScreenCapturesGenerator|*.asscg'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'Enregistrer le projet sous'
     Left = 512
     Top = 200
+  end
+  object OpenDialogImage: TOpenDialog
+    Filter = 'Images|*.jpg;*.png|Images JPEG|*.jpg|Images PNG|*.png'
+    Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
+    Title = 'Charger une image'
+    Left = 392
+    Top = 272
   end
 end

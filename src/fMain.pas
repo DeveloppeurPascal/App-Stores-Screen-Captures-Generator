@@ -21,7 +21,10 @@ uses
   FMX.Controls.Presentation,
   FMX.StdCtrls,
   FMX.Layouts,
-  FMX.TabControl;
+  FMX.TabControl,
+  FMX.ListBox,
+  FMX.Edit,
+  FMX.Objects, FMX.Colors;
 
 type
   TfrmMain = class(TForm)
@@ -53,8 +56,8 @@ type
     tiProjectLanguages: TTabItem;
     tiBackground: TTabItem;
     mnuOutilsReloadDBStores: TMenuItem;
-    OpenDialog1: TOpenDialog;
-    SaveDialog1: TSaveDialog;
+    OpenDialogProject: TOpenDialog;
+    SaveDialogProject: TSaveDialog;
     sbStores: TVertScrollBox;
     tbStores: TToolBar;
     btnStoresSelectAll: TButton;
@@ -64,6 +67,23 @@ type
     tbLanguages: TToolBar;
     btnLanguagesSelectAll: TButton;
     btnLanguagesUnSelectAll: TButton;
+    sbBackground: TVertScrollBox;
+    lblBackgroundKind: TLabel;
+    cbBackgroundKind: TComboBox;
+    lBackgroundBitmap: TLayout;
+    lBackgroundColor: TLayout;
+    lblBackgroundBitmap: TLabel;
+    imgBackgroundBitmap: TImageControl;
+    gplBackgroundBitmap: TGridPanelLayout;
+    btnBackgroundBitmapLoad: TButton;
+    btnBackgroundBitmapRemove: TButton;
+    lblBackgroundColor: TLabel;
+    lBackgroundColorChoice: TLayout;
+    edtBackgroundColor: TEdit;
+    cqBackgroundColor: TColorQuad;
+    cpBackgroundColor: TColorPicker;
+    cbBackgroundColor: TColorBox;
+    OpenDialogImage: TOpenDialog;
     procedure OlfAboutDialog1URLClick(const AURL: string);
     procedure FormCreate(Sender: TObject);
     procedure mnuFichierQuitterClick(Sender: TObject);
@@ -81,6 +101,11 @@ type
     procedure mnuOutilsLanguesDesProjetsClick(Sender: TObject);
     procedure btnLanguagesSelectAllClick(Sender: TObject);
     procedure btnLanguagesUnSelectAllClick(Sender: TObject);
+    procedure cbBackgroundKindChange(Sender: TObject);
+    procedure btnBackgroundBitmapLoadClick(Sender: TObject);
+    procedure btnBackgroundBitmapRemoveClick(Sender: TObject);
+    procedure edtBackgroundColorChange(Sender: TObject);
+    procedure cqBackgroundColorChange(Sender: TObject);
   private
     FCurrentProject: TASSCGProject;
     FDBStores: TASSCGDBStores;
@@ -125,6 +150,41 @@ uses
   fStoresLanguages,
   uDMStoresLanguages;
 
+procedure TfrmMain.btnBackgroundBitmapLoadClick(Sender: TObject);
+var
+  filename: string;
+begin
+  // TODO : restaurer le précédent chemin utilisé
+  if string(OpenDialogImage.filename).isempty then
+{$IFDEF DEBUG}
+    OpenDialogImage.InitialDir := tpath.GetPicturesPath
+{$ELSE}
+    OpenDialogImage.InitialDir := tpath.GetDocumentsPath
+{$ENDIF}
+  else
+    OpenDialogImage.InitialDir := tpath.GetDirectoryName
+      (OpenDialogImage.filename);
+
+  if OpenDialogImage.Execute then
+  begin
+    // TODO : sauvegarder le chemin utilisé pour plus tard
+    filename := OpenDialogImage.filename;
+    if not tfile.Exists(filename) then
+      raise exception.Create('File not found.');
+    if (not filename.tolower.EndsWith('.jpg')) and
+      (not filename.tolower.EndsWith('.png')) then
+      raise exception.Create('Wrong file extension. Won''t open it.');
+    CurrentProject.Background.BitmapLoadFromFile(filename);
+    imgBackgroundBitmap.Bitmap.Assign(CurrentProject.Background.Bitmap);
+  end;
+end;
+
+procedure TfrmMain.btnBackgroundBitmapRemoveClick(Sender: TObject);
+begin
+  CurrentProject.Background.BitmapClear;
+  imgBackgroundBitmap.Bitmap.setsize(0, 0);
+end;
+
 procedure TfrmMain.btnExportClick(Sender: TObject);
 begin
   // TODO : à compléter
@@ -167,6 +227,59 @@ begin
       (o as TCheckBox).ischecked := false;
 end;
 
+procedure TfrmMain.cbBackgroundKindChange(Sender: TObject);
+begin
+  CurrentProject.Background.Kind :=
+    TASSCGFillKind(cbBackgroundKind.Selected.Tag);
+  lBackgroundColor.visible := CurrentProject.Background.Kind =
+    TASSCGFillKind.solid;
+  lBackgroundBitmap.visible := not lBackgroundColor.visible;
+end;
+
+procedure TfrmMain.cqBackgroundColorChange(Sender: TObject);
+begin
+  edtBackgroundColor.Tag := -1;
+  try
+    edtBackgroundColor.text := InttoHex(cbBackgroundColor.color);
+  finally
+    edtBackgroundColor.Tag := 0;
+  end;
+end;
+
+procedure TfrmMain.edtBackgroundColorChange(Sender: TObject);
+var
+  color: talphacolor;
+  i: integer;
+  txt: string;
+  v: byte;
+begin
+  txt := edtBackgroundColor.text.tolower;
+  while (txt.length < 6) do
+    txt := '0' + txt;
+  while (txt.length < 8) do
+    txt := 'f' + txt;
+  color := $FF;
+  for i := 2 to txt.length - 1 do
+  begin
+    case txt.Chars[i] of
+      '0' .. '9':
+        v := ord(txt.Chars[i]) - ord('0');
+      'a' .. 'f':
+        v := 10 + ord(txt.Chars[i]) - ord('a');
+    else
+      raise exception.Create
+        ('Please give an hexadecimal value in alpha, red, green, blue format.');
+    end;
+    color := color * 16 + v;
+  end;
+
+  CurrentProject.Background.color := color;
+
+  if not(edtBackgroundColor.Tag = -1) then
+    // -1 => modification faite depuis cbBackgroundColor
+    cbBackgroundColor.color := color;
+end;
+
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
   o: TFMXObject;
@@ -179,10 +292,10 @@ begin
   mnuFichierQuitter.visible := false;
   mnuAide.visible := false;
   mnuAideAPropos.Parent := mnuSystemMacOS;
-  mnuAideAPropos.Text := 'A propos de ' + OlfAboutDialog1.Titre;
+  mnuAideAPropos.text := 'A propos de ' + OlfAboutDialog1.Titre;
   mnuOutils.visible := false;
   mnuOutilsOptions.Parent := mnuSystemMacOS;
-  mnuOutilsOptions.Text := 'Réglages';
+  mnuOutilsOptions.text := 'Réglages';
 
   mnuFichierNouveau.ShortCut := scCommand + ord('N');
   mnuFichierOuvrir.ShortCut := scCommand + ord('O');
@@ -232,7 +345,7 @@ begin
   // Masque les TLayout servant d'écrans
   for o in children do
     if (o is TLayout) and
-      (string((o as TLayout).Name).ToLower.EndsWith('screen')) then
+      (string((o as TLayout).Name).tolower.EndsWith('screen')) then
       (o as TLayout).visible := false;
 
   // Bascule sur l'écran d'accueil
@@ -254,9 +367,11 @@ procedure TfrmMain.GoToProjectScreen;
 var
   o: tcomponent;
   cb: TCheckBox;
+  item: TListBoxItem;
+  fk: TASSCGFillKind;
 begin
   if (DBStores.Count = 0) then
-    raise exception.create
+    raise exception.Create
       ('No stores database. Please wait a minute or reload them from "Tools" options.');
 
   tcProject.ActiveTab := tiProjectStores;
@@ -271,7 +386,25 @@ begin
 
   // Initialisation de l'onglet "background"
 
-  // TODO : à compléter
+  cbBackgroundKind.Clear;
+  for fk := low(TASSCGFillKind) to high(TASSCGFillKind) do
+  begin
+    item := TListBoxItem.Create(self);
+    item.text := fk.ToString;
+    item.Tag := fk.Value;
+    cbBackgroundKind.AddObject(item);
+    if CurrentProject.Background.Kind = fk then
+      cbBackgroundKind.ItemIndex := cbBackgroundKind.Items.Count - 1;
+  end;
+
+  if assigned(CurrentProject.Background.Bitmap) and
+    (CurrentProject.Background.Bitmap.Width > 0) and
+    (CurrentProject.Background.Bitmap.height > 0) then
+    imgBackgroundBitmap.Bitmap.Assign(CurrentProject.Background.Bitmap)
+  else
+    imgBackgroundBitmap.Bitmap.Clear(talphacolors.white);
+
+  edtBackgroundColor.text := InttoHex(CurrentProject.Background.color, 8);
 
   // Initialisation de l'onglet "bitmaps"
 
@@ -290,18 +423,18 @@ var
   filename: string;
 begin
   if not assigned(CurrentProject) then
-    raise exception.create('No opened projet to save.');
+    raise exception.Create('No opened projet to save.');
 
   if CurrentProject.filename.isempty then
   begin
     // TODO : restaurer le précédent chemin utilisé
-    SaveDialog1.InitialDir := tpath.GetDocumentsPath;
-    SaveDialog1.filename := '';
-    if SaveDialog1.Execute then
+    SaveDialogProject.InitialDir := tpath.GetDocumentsPath;
+    SaveDialogProject.filename := '';
+    if SaveDialogProject.Execute then
     begin
       // TODO : sauver le chemin utilisé pour le proposer la fois suivante
-      filename := SaveDialog1.filename;
-      if tpath.GetExtension(filename).ToLower <> '.asscg' then
+      filename := SaveDialogProject.filename;
+      if tpath.GetExtension(filename).tolower <> '.asscg' then
         filename := tpath.GetFileNameWithoutExtension(filename) + '.asscg';
 
       CurrentProject.SaveToFile(filename);
@@ -320,7 +453,7 @@ end;
 
 procedure TfrmMain.mnuFichierNouveauClick(Sender: TObject);
 begin
-  CurrentProject := TASSCGProject.create;
+  CurrentProject := TASSCGProject.Create;
   GoToProjectScreen;
 end;
 
@@ -329,20 +462,21 @@ var
   filename: string;
 begin
   // TODO : restaurer le précédent chemin utilisé
-  if string(OpenDialog1.filename).isempty then
-    OpenDialog1.InitialDir := tpath.GetDocumentsPath
+  if string(OpenDialogProject.filename).isempty then
+    OpenDialogProject.InitialDir := tpath.GetDocumentsPath
   else
-    OpenDialog1.InitialDir := tpath.GetDirectoryName(OpenDialog1.filename);
+    OpenDialogProject.InitialDir := tpath.GetDirectoryName
+      (OpenDialogProject.filename);
 
-  if OpenDialog1.Execute then
+  if OpenDialogProject.Execute then
   begin
     // TODO : sauvegarder le chemin utilisé pour plus tard
-    filename := OpenDialog1.filename;
+    filename := OpenDialogProject.filename;
     if not tfile.Exists(filename) then
-      raise exception.create('File not found.');
-    if not filename.ToLower.EndsWith('.asscg') then
-      raise exception.create('Wrong file extension. Won''t open it.');
-    CurrentProject := TASSCGProject.create(filename);
+      raise exception.Create('File not found.');
+    if not filename.tolower.EndsWith('.asscg') then
+      raise exception.Create('Wrong file extension. Won''t open it.');
+    CurrentProject := TASSCGProject.Create(filename);
     GoToProjectScreen;
   end;
 end;
@@ -351,7 +485,7 @@ procedure TfrmMain.mnuOutilsLanguesDesProjetsClick(Sender: TObject);
 var
   frm: TfrmStoresLanguages;
 begin
-  frm := TfrmStoresLanguages.create(self);
+  frm := TfrmStoresLanguages.Create(self);
   try
     frm.showmodal;
   finally
@@ -363,7 +497,7 @@ procedure TfrmMain.mnuOutilsOptionsClick(Sender: TObject);
 var
   frm: TfrmOptions;
 begin
-  frm := TfrmOptions.create(self);
+  frm := TfrmOptions.Create(self);
   try
     frm.showmodal;
   finally
@@ -468,16 +602,16 @@ begin
   for i := sbLanguages.content.ChildrenCount - 1 downto 0 do
   begin
     o := sbLanguages.content.children[i];
-    if (o is TCheckBox) and ((o as TCheckBox).tag = 2) then
+    if (o is TCheckBox) and ((o as TCheckBox).Tag = 2) then
       o.free;
   end;
 
-  dm := TdmStoresLanguages.create(self);
+  dm := TdmStoresLanguages.Create(self);
   try
     dm.fdStoresLanguages.first;
     while not dm.fdStoresLanguages.eof do
     begin
-      with TCheckBox.create(self) do
+      with TCheckBox.Create(self) do
       begin
         Parent := sbLanguages;
         Align := talignlayout.Top;
@@ -485,9 +619,9 @@ begin
         Margins.Top := 5;
         Margins.Right := 5;
         Margins.Bottom := 5;
-        Text := dm.fdStoresLanguages.fieldbyname('Libelle').AsString;
+        text := dm.fdStoresLanguages.fieldbyname('Libelle').AsString;
         tagstring := dm.fdStoresLanguages.fieldbyname('Folder').AsString;
-        tag := 2;
+        Tag := 2;
         OnChange := onLanguageChange;
         ischecked := assigned(CurrentProject) and
           CurrentProject.hasLanguage(tagstring);
@@ -508,13 +642,13 @@ begin
   for i := sbStores.content.ChildrenCount - 1 downto 0 do
   begin
     o := sbStores.content.children[i];
-    if (o is TCheckBox) and ((o as TCheckBox).tag = 1) then
+    if (o is TCheckBox) and ((o as TCheckBox).Tag = 1) then
       o.free;
   end;
 
   if DBStores.Count > 0 then
     for Store in DBStores do
-      with TCheckBox.create(self) do
+      with TCheckBox.Create(self) do
       begin
         Parent := sbStores;
         Align := talignlayout.Top;
@@ -522,9 +656,9 @@ begin
         Margins.Top := 5;
         Margins.Right := 5;
         Margins.Bottom := 5;
-        Text := Store.Name;
+        text := Store.Name;
         tagstring := Store.id;
-        tag := 1;
+        Tag := 1;
         OnChange := onStoreChange;
         ischecked := assigned(CurrentProject) and
           CurrentProject.hasStore(tagstring);
@@ -536,7 +670,7 @@ var
   folder, filename: string;
 begin
   DBStores.free;
-  DBStores := TASSCGDBStores.create;
+  DBStores := TASSCGDBStores.Create;
 
 {$IFDEF DEBUG}
   folder := tpath.combine(tpath.GetDocumentsPath, 'OlfSoftware-DEBUG',
