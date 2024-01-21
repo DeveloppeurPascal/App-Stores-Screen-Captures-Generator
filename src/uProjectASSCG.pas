@@ -47,7 +47,7 @@ type
 
   TASSCGBitmap = class
   private const
-    CVersion = 2;
+    CVersion = 3;
     // don't forget to increase CProjectVersion if you change CVersion
 
   var
@@ -57,6 +57,9 @@ type
     FForAllLanguages: boolean;
     FForStores: TASSCGIDStores;
     FForLanguages: TASSCGLanguages;
+    FFileName: string;
+    function GetFileName: string;
+    procedure SetFileName(const Value: string);
     procedure SetForAllLanguages(const Value: boolean);
     procedure SetForAllStores(const Value: boolean);
     procedure SetForLanguages(const Value: TASSCGLanguages);
@@ -73,6 +76,7 @@ type
       write SetForLanguages;
     property ForAllStores: boolean read FForAllStores write SetForAllStores;
     property ForStores: TASSCGIDStores read FForStores write SetForStores;
+    property FileName: string read GetFileName write SetFileName;
     constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
@@ -182,7 +186,7 @@ type
 
   TASSCGProject = class
   private const
-    CProjectVersion = 2;
+    CProjectVersion = 3;
 
   var
     FBitmaps: TASSCGBitmapList;
@@ -199,7 +203,7 @@ type
     procedure SetLanguages(const Value: TASSCGLanguages);
     procedure SetHasChanged(const Value: boolean);
     function GetProjectName: string;
-    procedure SetFilename(const Value: string);
+    procedure SetFileName(const Value: string);
   protected
   public
     property Bitmaps: TASSCGBitmapList read FBitmaps write SetBitmaps;
@@ -209,7 +213,7 @@ type
     property Stores: TASSCGIDStores read FStores write SetStores;
     property HasChanged: boolean read FHasChanged write SetHasChanged;
     property Name: string read GetProjectName;
-    property Filename: string read FFileName write SetFilename;
+    property FileName: string read FFileName write SetFileName;
     procedure LoadFromStream(AStream: TStream);
     procedure LoadFromFile(AFilename: string);
     procedure SaveToStream(AStream: TStream);
@@ -257,6 +261,7 @@ begin
   FForAllLanguages := true;
   FForStores := TASSCGIDStores.Create(AProject);
   FForLanguages := TASSCGLanguages.Create(AProject);
+  FFileName := '';
 end;
 
 destructor TASSCGBitmap.Destroy;
@@ -265,6 +270,29 @@ begin
   FForStores.free;
   FForLanguages.free;
   inherited;
+end;
+
+function TASSCGBitmap.GetFileName: string;
+var
+  i, n: byte;
+begin
+  if FFileName.isempty then
+  begin
+    FFileName := 'ScreenCapture_';
+    for i := 1 to 10 do
+    begin
+      n := random(62);
+      case n of
+        0 .. 9:
+          FFileName := FFileName + chr(ord('0') + n);
+        10 .. 35:
+          FFileName := FFileName + chr(ord('a') + n - 10);
+        36 .. 61:
+          FFileName := FFileName + chr(ord('A') + n - 36);
+      end;
+    end;
+  end;
+  result := FFileName;
 end;
 
 function TASSCGBitmap.hasLanguage(const ALanguage: string): boolean;
@@ -307,6 +335,11 @@ begin
 
     FForLanguages.LoadFromStream(AStream);
   end;
+
+  if (Version >= 3) then
+  begin
+    FFileName := loadstringfromstream(AStream);
+  end;
 end;
 
 procedure TASSCGBitmap.SaveToStream(AStream: TStream);
@@ -334,6 +367,8 @@ begin
   FForStores.SaveToStream(AStream);
 
   FForLanguages.SaveToStream(AStream);
+
+  savestringtostream(FFileName, AStream);
 end;
 
 procedure TASSCGBitmap.SetBitmap(const Value: TBitmap);
@@ -342,6 +377,16 @@ begin
     exit;
 
   FBitmap := Value;
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.SetFileName(const Value: string);
+begin
+  if FFileName = Value then
+    exit;
+
+  FFileName := Value;
   if assigned(FProject) then
     FProject.HasChanged := true;
 end;
@@ -528,7 +573,7 @@ begin
 
   clear;
   for i := 1 to Nb do
-    Add(LoadStringFromStream(AStream, TEncoding.UTF8));
+    Add(loadstringfromstream(AStream, TEncoding.UTF8));
 end;
 
 function TASSCGLanguages.Remove(const Value: string): NativeInt;
@@ -556,7 +601,7 @@ begin
       ('Can''t save this project file. No enough space on the disk.');
 
   for i := 0 to Nb - 1 do
-    SaveStringToStream(self[i], AStream, TEncoding.UTF8);
+    savestringtostream(self[i], AStream, TEncoding.UTF8);
 end;
 
 procedure TASSCGLanguages.SetProject(const Value: TASSCGProject);
@@ -700,15 +745,15 @@ begin
 
   FBitmaps := TASSCGBitmapList.Create(self);
   FBackground := TASSCGBackground.Create(self);
-  FEffect := TASSCGEffect.None;
+  FEffect := TASSCGEffect.Shadow;
   FLanguages := TASSCGLanguages.Create(self);
   FHasChanged := false;
   FStores := TASSCGIDStores.Create(self);
 
-  if not AFromFileName.IsEmpty then
+  if not AFromFileName.isempty then
     LoadFromFile(AFromFileName)
   else
-    Filename := '';
+    FileName := '';
 end;
 
 destructor TASSCGProject.Destroy;
@@ -723,7 +768,7 @@ end;
 
 function TASSCGProject.GetProjectName: string;
 begin
-  if FFileName.IsEmpty then
+  if FFileName.isempty then
     result := 'Untitled'
   else
     result := tpath.GetFileNameWithoutExtension(FFileName);
@@ -743,13 +788,13 @@ procedure TASSCGProject.LoadFromFile(AFilename: string);
 var
   fs: TFileStream;
 begin
-  if AFilename.IsEmpty or (not tfile.Exists(AFilename)) then
+  if AFilename.isempty or (not tfile.Exists(AFilename)) then
     raise exception.Create('File doesn''t exist !');
   try
     fs := TFileStream.Create(AFilename, fmOpenRead);
     try
       LoadFromStream(fs);
-      Filename := AFilename;
+      FileName := AFilename;
       HasChanged := false;
     finally
       fs.free;
@@ -803,12 +848,12 @@ var
   fs: TFileStream;
   fn: string;
 begin
-  if AFilename.IsEmpty then
+  if AFilename.isempty then
     fn := FFileName
   else
     fn := AFilename;
 
-  if fn.IsEmpty then
+  if fn.isempty then
     raise exception.Create('Can''t save the project without a filename !');
 
   try
@@ -816,7 +861,7 @@ begin
     try
       SaveToStream(fs);
       if (AFilename <> FFileName) then
-        Filename := fn;
+        FileName := fn;
       HasChanged := false;
     finally
       fs.free;
@@ -896,7 +941,7 @@ begin
   HasChanged := true;
 end;
 
-procedure TASSCGProject.SetFilename(const Value: string);
+procedure TASSCGProject.SetFileName(const Value: string);
 begin
   FFileName := Value;
 
@@ -992,7 +1037,7 @@ begin
 
   clear;
   for i := 1 to Nb do
-    Add(LoadStringFromStream(AStream, TEncoding.UTF8));
+    Add(loadstringfromstream(AStream, TEncoding.UTF8));
 end;
 
 function TASSCGIDStores.Remove(const Value: string): NativeInt;
@@ -1020,7 +1065,7 @@ begin
       ('Can''t save this project file. No enough space on the disk.');
 
   for i := 0 to Nb - 1 do
-    SaveStringToStream(self[i], AStream, TEncoding.UTF8);
+    savestringtostream(self[i], AStream, TEncoding.UTF8);
 end;
 
 procedure TASSCGIDStores.SetProject(const Value: TASSCGProject);
