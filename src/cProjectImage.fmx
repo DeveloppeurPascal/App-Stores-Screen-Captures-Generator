@@ -1,0 +1,168 @@
+object cadProjectImage: TcadProjectImage
+  Margins.Left = 5.000000000000000000
+  Margins.Top = 5.000000000000000000
+  Margins.Right = 5.000000000000000000
+  Margins.Bottom = 5.000000000000000000
+  Size.Width = 741.000000000000000000
+  Size.Height = 240.000000000000000000
+  Size.PlatformDefault = False
+  object GridPanelLayout1: TGridPanelLayout
+    Align = Client
+    Size.Width = 741.000000000000000000
+    Size.Height = 240.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    ColumnCollection = <
+      item
+        SizeStyle = Absolute
+        Value = 240.000000000000000000
+      end
+      item
+        Value = 100.000000000000000000
+      end>
+    ControlCollection = <
+      item
+        Column = 0
+        Control = imgBitmap
+        Row = 0
+        RowSpan = 3
+      end
+      item
+        Column = 1
+        Control = btnDelete
+        Row = 2
+      end
+      item
+        Column = 1
+        Control = lStores
+        Row = 0
+      end
+      item
+        Column = 1
+        Control = lLanguages
+        Row = 1
+      end>
+    RowCollection = <
+      item
+        SizeStyle = Absolute
+        Value = 100.000000000000000000
+      end
+      item
+        SizeStyle = Absolute
+        Value = 100.000000000000000000
+      end
+      item
+        SizeStyle = Absolute
+        Value = 40.000000000000000000
+      end
+      item
+        SizeStyle = Auto
+      end>
+    object imgBitmap: TImageControl
+      Align = Client
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Size.Width = 230.000000000000000000
+      Size.Height = 230.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+    end
+    object btnDelete: TButton
+      Align = Client
+      Anchors = []
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Size.Width = 491.000000000000000000
+      Size.Height = 30.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = 'Supprimer'
+      TextSettings.Trimming = None
+      OnClick = btnDeleteClick
+    end
+    object lStores: TLayout
+      Align = Client
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Size.Width = 491.000000000000000000
+      Size.Height = 90.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      object sbStores: TVertScrollBox
+        Align = Client
+        Size.Width = 491.000000000000000000
+        Size.Height = 71.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 491.000000000000000000
+        Viewport.Height = 71.000000000000000000
+      end
+      object cbAllStores: TCheckBox
+        Align = Top
+        Size.Width = 491.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Tous les magasins du projet'
+        OnChange = cbAllStoresChange
+        object btnRefreshStores: TButton
+          Align = Right
+          Position.X = 411.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 19
+          Text = 'Recharger'
+          TextSettings.Trimming = None
+          OnClick = btnRefreshStoresClick
+        end
+      end
+    end
+    object lLanguages: TLayout
+      Align = Client
+      Margins.Left = 5.000000000000000000
+      Margins.Top = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Margins.Bottom = 5.000000000000000000
+      Size.Width = 491.000000000000000000
+      Size.Height = 90.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      object sbLanguages: TVertScrollBox
+        Align = Client
+        Size.Width = 491.000000000000000000
+        Size.Height = 71.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Viewport.Width = 491.000000000000000000
+        Viewport.Height = 71.000000000000000000
+      end
+      object cbAllLanguages: TCheckBox
+        Align = Top
+        Size.Width = 491.000000000000000000
+        Size.Height = 19.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = 'Toutes les langues du projet'
+        OnChange = cbAllLanguagesChange
+        object btnRefreshLanguages: TButton
+          Align = Right
+          Position.X = 411.000000000000000000
+          Size.Width = 80.000000000000000000
+          Size.Height = 19.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 19
+          Text = 'Recharger'
+          TextSettings.Trimming = None
+          OnClick = btnRefreshLanguagesClick
+        end
+      end
+    end
+  end
+end
