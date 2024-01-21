@@ -25,7 +25,8 @@ uses
   FMX.ListBox,
   FMX.Edit,
   FMX.Objects,
-  FMX.Colors;
+  FMX.Colors,
+  FMX.Effects;
 
 type
   TfrmMain = class(TForm)
@@ -129,6 +130,10 @@ type
     procedure ShowLanguageList;
     procedure onStoreChange(Sender: TObject);
     procedure onLanguageChange(Sender: TObject);
+    function GetStoreFromDBStores(Const AID: string): TASSCGDBStore;
+    procedure ExportBitmap(Const Bitmap: TASSCGBitmap;
+      Const Store: TASSCGDBStore; Const Background: TASSCGBackground;
+      Const Effect: TASSCGEffect; Const ToFolder: string);
   public
     { Déclarations publiques }
     property CurrentProject: TASSCGProject read FCurrentProject
@@ -230,9 +235,45 @@ begin
 end;
 
 procedure TfrmMain.btnExportClick(Sender: TObject);
+var
+  RootFolder: string;
+  Bitmap: TASSCGBitmap;
+  StoreID: string;
+  Store: TASSCGDBStore;
+  StoreList: TASSCGIDStores;
+  Language: string;
+  LanguageList: TASSCGLanguages;
 begin
-  // TODO : à compléter
-  showmessage('à faire');
+  if not assigned(CurrentProject) then
+    raise exception.Create('No project to export !');
+
+  RootFolder := tpath.combine(tpath.GetDirectoryName(CurrentProject.filename),
+    CurrentProject.filename + '.export');
+
+  // TODO : utiliser des threads si possible
+  for Bitmap in CurrentProject.Bitmaps do
+    if assigned(Bitmap.Bitmap) and (Bitmap.Bitmap.width > 0) and
+      (Bitmap.Bitmap.height > 0) then
+    begin
+      if Bitmap.ForAllStores then
+        StoreList := CurrentProject.Stores
+      else
+        StoreList := Bitmap.ForStores;
+      if Bitmap.ForAllLanguages then
+        LanguageList := CurrentProject.Languages
+      else
+        LanguageList := Bitmap.ForLanguages;
+      for StoreID in StoreList do
+      begin
+        Store := GetStoreFromDBStores(StoreID);
+        for Language in LanguageList do
+          ExportBitmap(Bitmap, Store, CurrentProject.Background,
+            CurrentProject.Effect, tpath.combine(RootFolder, Store.FolderName,
+            Language));
+      end;
+    end;
+
+  showmessage('Export terminé.');
 end;
 
 procedure TfrmMain.btnLanguagesSelectAllClick(Sender: TObject);
@@ -324,6 +365,132 @@ begin
     cbBackgroundColor.color := color;
 end;
 
+procedure TfrmMain.ExportBitmap(const Bitmap: TASSCGBitmap;
+  const Store: TASSCGDBStore; const Background: TASSCGBackground;
+  Const Effect: TASSCGEffect; const ToFolder: string);
+var
+  SaveFolder: string;
+  rBackground, rCapture: trectangle;
+  effGlow: TGlowEffect;
+  effShawdow: TShadowEffect;
+  orig_width, orig_height: integer;
+  Device: TASSCGDBDevice;
+  bmp: TBitmap;
+begin
+  if not assigned(Bitmap) then
+    raise exception.Create('I need a bitmap !');
+  if not assigned(Store) then
+    raise exception.Create('I need a store !');
+  if not assigned(Background) then
+    raise exception.Create('I need a background !');
+
+  if ToFolder.isempty then
+    raise exception.Create('No folder to store the image !');
+
+  // TODO : à compléter
+
+  // récupérer la taille de l'image d'origine
+  orig_width := Bitmap.Bitmap.width;
+  orig_height := Bitmap.Bitmap.height;
+
+  // parcourrir la liste des devices du magasin
+  for Device in Store.devices do
+  begin
+    SaveFolder := tpath.combine(ToFolder, Device.FolderName);
+
+    if not tdirectory.Exists(SaveFolder) then
+      tdirectory.CreateDirectory(SaveFolder);
+
+    // recherche de la taille d'image finale la plus proche de la notre
+    // => vérification de l'égalité
+    // => vérification du ratio (prendre le plus proche)
+    // => vérification de la superficie (soit la plus proche au dessus, soit la plus grande)
+
+    // assemblage des composants
+    rBackground := trectangle.Create(self);
+    try
+      rBackground.parent := self;
+      rBackground.stroke.Kind := tbrushkind.none;
+      rBackground.width := orig_width + 20 + 20; // TODO : corriger taille
+      rBackground.height := orig_height + 20 + 20; // TODO : corriger taille
+      case Background.Kind of
+        TASSCGFillKind.solid:
+          begin
+            rBackground.fill.Kind := tbrushkind.solid;
+            rBackground.fill.color := Background.color;
+          end;
+        TASSCGFillKind.BitmapTiled:
+          begin
+            rBackground.fill.Kind := tbrushkind.Bitmap;
+            rBackground.fill.Bitmap.WrapMode := twrapmode.Tile;
+            rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
+          end;
+        TASSCGFillKind.BitmapStretched:
+          begin
+            rBackground.fill.Kind := tbrushkind.Bitmap;
+            rBackground.fill.Bitmap.WrapMode := twrapmode.TileStretch;
+            rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
+          end;
+        TASSCGFillKind.BitmapCroped:
+          begin
+            // TODO : manage the "croped" value for background
+            rBackground.fill.Kind := tbrushkind.Bitmap;
+            rBackground.fill.Bitmap.WrapMode := twrapmode.TileOriginal;
+            rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
+          end;
+      else
+        raise exception.Create('Unknow background kind.');
+      end;
+
+      rCapture := trectangle.Create(rBackground);
+      rCapture.parent := rBackground;
+      rCapture.stroke.Kind := tbrushkind.none;
+      rCapture.width := orig_width; // TODO : corriger taille
+      rCapture.height := orig_height; // TODO : corriger taille
+      rCapture.position.x := (rBackground.width - rCapture.width) / 2;
+      rCapture.position.y := (rBackground.width - rCapture.width) / 2;
+      rCapture.fill.Kind := tbrushkind.Bitmap;
+      rCapture.fill.Bitmap.WrapMode := twrapmode.TileStretch;
+      rCapture.fill.Bitmap.Bitmap.Assign(Bitmap.Bitmap);
+
+      case Effect of
+        TASSCGEffect.none:
+          ;
+        TASSCGEffect.Glow:
+          begin
+            effGlow := TGlowEffect.Create(rBackground);
+            effGlow.parent := rCapture;
+            // TODO : changer les propriétés de l'effet selon les paramètres sur le projet
+          end;
+        TASSCGEffect.shadow:
+          begin
+            effShawdow := TShadowEffect.Create(rBackground);
+            effShawdow.parent := rCapture;
+            // TODO : changer les propriétés de l'effet selon les paramètres sur le projet
+          end;
+      else
+        raise exception.Create('Unknow effect type.');
+      end;
+
+      bmp := rBackground.makescreenshot;
+      try
+        case Device.ImageType of
+          TASSCGDBImageType.JPG:
+            bmp.SaveToFile(tpath.combine(SaveFolder, Bitmap.filename + '.jpg'));
+          TASSCGDBImageType.png:
+            bmp.SaveToFile(tpath.combine(SaveFolder, Bitmap.filename + '.png'));
+        else
+          raise exception.Create('Unknow file format for this device.');
+        end;
+      finally
+        bmp.free;
+      end;
+    finally
+      rBackground.free;
+    end;
+  end;
+end;
+
 procedure TfrmMain.FormCreate(Sender: TObject);
 var
   o: TFMXObject;
@@ -335,10 +502,10 @@ begin
 {$IFDEF MACOS}
   mnuFichierQuitter.visible := false;
   mnuAide.visible := false;
-  mnuAideAPropos.Parent := mnuSystemMacOS;
+  mnuAideAPropos.parent := mnuSystemMacOS;
   mnuAideAPropos.text := 'A propos de ' + OlfAboutDialog1.Titre;
   mnuOutils.visible := false;
-  mnuOutilsOptions.Parent := mnuSystemMacOS;
+  mnuOutilsOptions.parent := mnuSystemMacOS;
   mnuOutilsOptions.text := 'Réglages';
 
   mnuFichierNouveau.ShortCut := scCommand + ord('N');
@@ -402,6 +569,21 @@ begin
   DBStores.free;
 end;
 
+function TfrmMain.GetStoreFromDBStores(Const AID: string): TASSCGDBStore;
+var
+  Trouve: boolean;
+begin
+  Trouve := false;
+  for result in DBStores do
+    if (result.Id = AID) then
+    begin
+      Trouve := true;
+      break;
+    end;
+  if not Trouve then
+    result := nil;
+end;
+
 procedure TfrmMain.GoToHomeScreen;
 begin
   CurrentDisplay := lHomeScreen;
@@ -442,7 +624,7 @@ begin
   end;
 
   if assigned(CurrentProject.Background.Bitmap) and
-    (CurrentProject.Background.Bitmap.Width > 0) and
+    (CurrentProject.Background.Bitmap.width > 0) and
     (CurrentProject.Background.Bitmap.height > 0) then
     imgBackgroundBitmap.Bitmap.Assign(CurrentProject.Background.Bitmap)
   else
@@ -588,18 +770,18 @@ end;
 
 procedure TfrmMain.onStoreChange(Sender: TObject);
 var
-  id: string;
+  Id: string;
 begin
   if (Sender is TCheckBox) and not(Sender as TCheckBox).tagstring.isempty then
   begin
-    id := (Sender as TCheckBox).tagstring;
+    Id := (Sender as TCheckBox).tagstring;
     if (Sender as TCheckBox).ischecked then
     begin
-      if not CurrentProject.hasStore(id) then
-        CurrentProject.stores.add(id);
+      if not CurrentProject.hasStore(Id) then
+        CurrentProject.Stores.add(Id);
     end
-    else if CurrentProject.hasStore(id) then
-      CurrentProject.stores.Remove(id);
+    else if CurrentProject.hasStore(Id) then
+      CurrentProject.Stores.Remove(Id);
   end;
 end;
 
@@ -662,7 +844,7 @@ begin
     begin
       with TCheckBox.Create(self) do
       begin
-        Parent := sbLanguages;
+        parent := sbLanguages;
         Align := talignlayout.Top;
         Margins.Left := 5;
         Margins.Top := 5;
@@ -699,14 +881,14 @@ begin
     for Store in DBStores do
       with TCheckBox.Create(self) do
       begin
-        Parent := sbStores;
+        parent := sbStores;
         Align := talignlayout.Top;
         Margins.Left := 5;
         Margins.Top := 5;
         Margins.Right := 5;
         Margins.Bottom := 5;
         text := Store.Name;
-        tagstring := Store.id;
+        tagstring := Store.Id;
         Tag := 1;
         OnChange := onStoreChange;
         ischecked := assigned(CurrentProject) and
@@ -727,8 +909,8 @@ begin
 {$ELSE}
   folder := tpath.combine(tpath.GetHomePath, 'OlfSoftware', 'ASSCG');
 {$ENDIF}
-  if not TDirectory.Exists(folder) then
-    TDirectory.CreateDirectory(folder);
+  if not tdirectory.Exists(folder) then
+    tdirectory.CreateDirectory(folder);
 
 {$IFDEF DEBUG}
   filename := tpath.combine(folder, 'asscg-debug.asscgstores');
