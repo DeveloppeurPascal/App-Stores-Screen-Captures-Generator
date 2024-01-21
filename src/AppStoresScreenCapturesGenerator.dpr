@@ -19,7 +19,8 @@ uses
   uProjectASSCGStores in '..\lib-externes\ASSCG-Data-Admin\src\uProjectASSCGStores.pas',
   u_download in '..\lib-externes\librairies\u_download.pas',
   uDMStoresLanguages in 'uDMStoresLanguages.pas' {dmStoresLanguages: TDataModule},
-  fStoresLanguages in 'fStoresLanguages.pas' {frmStoresLanguages};
+  fStoresLanguages in 'fStoresLanguages.pas' {frmStoresLanguages},
+  cProjectImage in 'cProjectImage.pas' {cadProjectImage: TFrame};
 
 {$R *.res}
 
