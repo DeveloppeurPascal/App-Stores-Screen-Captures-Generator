@@ -77,6 +77,10 @@ type
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
     destructor Destroy; override;
+    procedure BitmapLoadFromFile(AFilename: string);
+    procedure BitmapClear;
+    function hasStore(const AID: string): boolean;
+    function hasLanguage(const ALanguage: string): boolean;
   end;
 
   TASSCGBitmapList = class(TObjectList<TASSCGBitmap>)
@@ -93,6 +97,10 @@ type
     constructor Create(AProject: TASSCGProject);
     procedure LoadFromStream(AStream: TStream);
     procedure SaveToStream(AStream: TStream);
+    function Add(const Value: TASSCGBitmap): NativeInt;
+    procedure Insert(Index: NativeInt; const Value: TASSCGBitmap);
+    function Remove(const Value: TASSCGBitmap): NativeInt;
+    procedure Delete(Index: NativeInt);
   end;
 
   TASSCGLanguages = class(TList<string>)
@@ -222,6 +230,24 @@ uses
 
 { TASSCGBitmap }
 
+procedure TASSCGBitmap.BitmapClear;
+begin
+  freeandnil(Bitmap);
+
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmap.BitmapLoadFromFile(AFilename: string);
+begin
+  if not assigned(Bitmap) then
+    Bitmap := TBitmap.Create;
+  Bitmap.LoadFromFile(AFilename);
+
+  if assigned(FProject) then
+    FProject.HasChanged := true;
+end;
+
 constructor TASSCGBitmap.Create(AProject: TASSCGProject);
 begin
   inherited Create;
@@ -239,6 +265,16 @@ begin
   FForStores.free;
   FForLanguages.free;
   inherited;
+end;
+
+function TASSCGBitmap.hasLanguage(const ALanguage: string): boolean;
+begin
+  result := (ForLanguages.IndexOf(ALanguage) >= 0);
+end;
+
+function TASSCGBitmap.hasStore(const AID: string): boolean;
+begin
+  result := (ForStores.IndexOf(AID) >= 0);
 end;
 
 procedure TASSCGBitmap.LoadFromStream(AStream: TStream);
@@ -362,10 +398,28 @@ end;
 
 { TASSCGBitmapList }
 
+function TASSCGBitmapList.Add(const Value: TASSCGBitmap): NativeInt;
+begin
+  result := inherited;
+  FProject.HasChanged := true;
+end;
+
 constructor TASSCGBitmapList.Create(AProject: TASSCGProject);
 begin
   inherited Create;
   FProject := AProject;
+end;
+
+procedure TASSCGBitmapList.Delete(Index: NativeInt);
+begin
+  inherited;
+  FProject.HasChanged := true;
+end;
+
+procedure TASSCGBitmapList.Insert(Index: NativeInt; const Value: TASSCGBitmap);
+begin
+  inherited;
+  FProject.HasChanged := true;
 end;
 
 procedure TASSCGBitmapList.LoadFromStream(AStream: TStream);
@@ -391,6 +445,12 @@ begin
     bmp.LoadFromStream(AStream);
     Add(bmp);
   end;
+end;
+
+function TASSCGBitmapList.Remove(const Value: TASSCGBitmap): NativeInt;
+begin
+  result := inherited;
+  FProject.HasChanged := true;
 end;
 
 procedure TASSCGBitmapList.SaveToStream(AStream: TStream);
