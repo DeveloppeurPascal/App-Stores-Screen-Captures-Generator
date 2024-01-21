@@ -24,7 +24,8 @@ uses
   FMX.TabControl,
   FMX.ListBox,
   FMX.Edit,
-  FMX.Objects, FMX.Colors;
+  FMX.Objects,
+  FMX.Colors;
 
 type
   TfrmMain = class(TForm)
@@ -84,6 +85,9 @@ type
     cpBackgroundColor: TColorPicker;
     cbBackgroundColor: TColorBox;
     OpenDialogImage: TOpenDialog;
+    sbImages: TVertScrollBox;
+    tbImages: TToolBar;
+    btnAddImage: TButton;
     procedure OlfAboutDialog1URLClick(const AURL: string);
     procedure FormCreate(Sender: TObject);
     procedure mnuFichierQuitterClick(Sender: TObject);
@@ -106,6 +110,7 @@ type
     procedure btnBackgroundBitmapRemoveClick(Sender: TObject);
     procedure edtBackgroundColorChange(Sender: TObject);
     procedure cqBackgroundColorChange(Sender: TObject);
+    procedure btnAddImageClick(Sender: TObject);
   private
     FCurrentProject: TASSCGProject;
     FDBStores: TASSCGDBStores;
@@ -148,7 +153,43 @@ uses
   System.IOUtils,
   Olf.FMX.AboutDialogForm,
   fStoresLanguages,
-  uDMStoresLanguages;
+  uDMStoresLanguages,
+  cProjectImage;
+
+procedure TfrmMain.btnAddImageClick(Sender: TObject);
+var
+  filename: string;
+  Bitmap: TASSCGBitmap;
+begin
+  // TODO : restaurer le précédent chemin utilisé
+  if string(OpenDialogImage.filename).isempty then
+{$IFDEF DEBUG}
+    OpenDialogImage.InitialDir := tpath.GetPicturesPath
+{$ELSE}
+    OpenDialogImage.InitialDir := tpath.GetDocumentsPath
+{$ENDIF}
+  else
+    OpenDialogImage.InitialDir := tpath.GetDirectoryName
+      (OpenDialogImage.filename);
+
+  if OpenDialogImage.Execute then
+  begin
+    // TODO : sauvegarder le chemin utilisé pour plus tard
+    filename := OpenDialogImage.filename;
+    if not tfile.Exists(filename) then
+      raise exception.Create('File not found.');
+    if (not filename.tolower.EndsWith('.jpg')) and
+      (not filename.tolower.EndsWith('.png')) then
+      raise exception.Create('Wrong file extension. Won''t open it.');
+    if not tfile.Exists(filename) then
+      raise exception.Create('This image file doesn''t exist !');
+
+    Bitmap := TASSCGBitmap.Create(CurrentProject);
+    Bitmap.BitmapLoadFromFile(filename);
+    CurrentProject.Bitmaps.add(Bitmap);
+    TcadProjectImage.GetNew(self, sbImages, Bitmap, DBStores);
+  end;
+end;
 
 procedure TfrmMain.btnBackgroundBitmapLoadClick(Sender: TObject);
 var
@@ -174,6 +215,9 @@ begin
     if (not filename.tolower.EndsWith('.jpg')) and
       (not filename.tolower.EndsWith('.png')) then
       raise exception.Create('Wrong file extension. Won''t open it.');
+    if not tfile.Exists(filename) then
+      raise exception.Create('This image file doesn''t exist !');
+
     CurrentProject.Background.BitmapLoadFromFile(filename);
     imgBackgroundBitmap.Bitmap.Assign(CurrentProject.Background.Bitmap);
   end;
@@ -365,10 +409,10 @@ end;
 
 procedure TfrmMain.GoToProjectScreen;
 var
-  o: tcomponent;
-  cb: TCheckBox;
   item: TListBoxItem;
   fk: TASSCGFillKind;
+  Bitmap: TASSCGBitmap;
+  i: integer;
 begin
   if (DBStores.Count = 0) then
     raise exception.Create
@@ -408,7 +452,12 @@ begin
 
   // Initialisation de l'onglet "bitmaps"
 
-  // TODO : à compléter
+  for i := sbImages.content.ChildrenCount - 1 downto 0 do
+    if sbImages.content.children[i] is TcadProjectImage then
+      sbImages.content.children[i].free;
+
+  for Bitmap in CurrentProject.Bitmaps do
+    TcadProjectImage.GetNew(self, sbImages, Bitmap, DBStores);
 
   CurrentDisplay := lProjectScreen;
 end;
@@ -530,7 +579,7 @@ begin
     if (Sender as TCheckBox).ischecked then
     begin
       if not CurrentProject.hasLanguage(folder) then
-        CurrentProject.Languages.Add(folder);
+        CurrentProject.Languages.add(folder);
     end
     else if CurrentProject.hasLanguage(folder) then
       CurrentProject.Languages.Remove(folder);
@@ -547,7 +596,7 @@ begin
     if (Sender as TCheckBox).ischecked then
     begin
       if not CurrentProject.hasStore(id) then
-        CurrentProject.stores.Add(id);
+        CurrentProject.stores.add(id);
     end
     else if CurrentProject.hasStore(id) then
       CurrentProject.stores.Remove(id);
