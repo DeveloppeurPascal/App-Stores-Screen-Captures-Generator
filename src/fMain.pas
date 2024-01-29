@@ -152,6 +152,7 @@ implementation
 
 uses
   System.Messaging,
+  System.Generics.Collections,
   FMX.DialogService,
   u_urlOpen,
   fOptions,
@@ -248,7 +249,7 @@ begin
     raise exception.Create('No project to export !');
 
   RootFolder := tpath.combine(tpath.GetDirectoryName(CurrentProject.filename),
-    CurrentProject.filename + '.export');
+    CurrentProject.filename + 'img');
 
   // TODO : utiliser des threads si possible
   for Bitmap in CurrentProject.Bitmaps do
@@ -266,10 +267,11 @@ begin
       for StoreID in StoreList do
       begin
         Store := GetStoreFromDBStores(StoreID);
-        for Language in LanguageList do
-          ExportBitmap(Bitmap, Store, CurrentProject.Background,
-            CurrentProject.Effect, tpath.combine(RootFolder, Store.FolderName,
-            Language));
+        if assigned(Store) then
+          for Language in LanguageList do
+            ExportBitmap(Bitmap, Store, CurrentProject.Background,
+              CurrentProject.Effect, tpath.combine(RootFolder, Store.FolderName,
+              Language));
       end;
     end;
 
@@ -375,6 +377,11 @@ var
   effShawdow: TShadowEffect;
   orig_width, orig_height: integer;
   Device: TASSCGDBDevice;
+  ImgDestSize: TASSCGDBImageSize;
+  ImgDestSelected: TList<TASSCGDBImageSize>;
+  i: integer;
+  Distance, Distance_min: integer;
+  IsOrigEnPaysage, IsOrigEnPortrait: boolean;
   bmp: TBitmap;
 begin
   if not assigned(Bitmap) then
@@ -387,11 +394,11 @@ begin
   if ToFolder.isempty then
     raise exception.Create('No folder to store the image !');
 
-  // TODO : à compléter
-
   // récupérer la taille de l'image d'origine
   orig_width := Bitmap.Bitmap.width;
   orig_height := Bitmap.Bitmap.height;
+  IsOrigEnPaysage := orig_width > orig_height;
+  IsOrigEnPortrait := orig_width < orig_height;
 
   // parcourrir la liste des devices du magasin
   for Device in Store.devices do
@@ -402,91 +409,134 @@ begin
       tdirectory.CreateDirectory(SaveFolder);
 
     // recherche de la taille d'image finale la plus proche de la notre
-    // => vérification de l'égalité
-    // => vérification du ratio (prendre le plus proche)
-    // => vérification de la superficie (soit la plus proche au dessus, soit la plus grande)
 
-    // assemblage des composants
-    rBackground := trectangle.Create(self);
+    ImgDestSelected := TList<TASSCGDBImageSize>.Create;
     try
-      rBackground.parent := self;
-      rBackground.stroke.Kind := tbrushkind.none;
-      rBackground.width := orig_width + 20 + 20; // TODO : corriger taille
-      rBackground.height := orig_height + 20 + 20; // TODO : corriger taille
-      case Background.Kind of
-        TASSCGFillKind.solid:
-          begin
-            rBackground.fill.Kind := tbrushkind.solid;
-            rBackground.fill.color := Background.color;
-          end;
-        TASSCGFillKind.BitmapTiled:
-          begin
-            rBackground.fill.Kind := tbrushkind.Bitmap;
-            rBackground.fill.Bitmap.WrapMode := twrapmode.Tile;
-            rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
-          end;
-        TASSCGFillKind.BitmapStretched:
-          begin
-            rBackground.fill.Kind := tbrushkind.Bitmap;
-            rBackground.fill.Bitmap.WrapMode := twrapmode.TileStretch;
-            rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
-          end;
-        TASSCGFillKind.BitmapCroped:
-          begin
-            // TODO : manage the "croped" value for background
-            rBackground.fill.Kind := tbrushkind.Bitmap;
-            rBackground.fill.Bitmap.WrapMode := twrapmode.TileOriginal;
-            rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
-          end;
-      else
-        raise exception.Create('Unknow background kind.');
+      // => récupération des images dans le bon sens
+      // (paysage, portrait ou les deux si capture carrée)
+      for ImgDestSize in Device.ImageSizes do
+        if ((ImgDestSize.width > ImgDestSize.height) and IsOrigEnPaysage) or
+          ((ImgDestSize.width < ImgDestSize.height) and IsOrigEnPortrait) or
+          (IsOrigEnPaysage = IsOrigEnPortrait) then
+          ImgDestSelected.add(ImgDestSize);
+
+      // => taille d'image la plus proche pour génération ensuite
+      ImgDestSize := nil;
+      Distance_min := -maxint;
+      for i := 0 to ImgDestSelected.count - 1 do
+      begin
+        Distance := ImgDestSelected[i].width * ImgDestSelected[i].height -
+          orig_width * orig_height;
+
+        if (Distance = 0) or ((Distance > 0) and (Distance < abs(Distance_min)))
+          or ((Distance < 0) and (Distance > Distance_min)) then
+        begin
+          ImgDestSize := ImgDestSelected[i];
+          Distance_min := Distance;
+        end;
       end;
 
-      rCapture := trectangle.Create(rBackground);
-      rCapture.parent := rBackground;
-      rCapture.stroke.Kind := tbrushkind.none;
-      rCapture.width := orig_width; // TODO : corriger taille
-      rCapture.height := orig_height; // TODO : corriger taille
-      rCapture.position.x := (rBackground.width - rCapture.width) / 2;
-      rCapture.position.y := (rBackground.width - rCapture.width) / 2;
-      rCapture.fill.Kind := tbrushkind.Bitmap;
-      rCapture.fill.Bitmap.WrapMode := twrapmode.TileStretch;
-      rCapture.fill.Bitmap.Bitmap.Assign(Bitmap.Bitmap);
+      if not assigned(ImgDestSize) then
+        if (ImgDestSelected.count > 0) then
+          ImgDestSize := ImgDestSelected[0]
+        else if (Device.ImageSizes.count > 0) then
+          ImgDestSize := Device.ImageSizes[0];
+    finally
+      ImgDestSelected.free;
+    end;
 
-      case Effect of
-        TASSCGEffect.none:
-          ;
-        TASSCGEffect.Glow:
-          begin
-            effGlow := TGlowEffect.Create(rBackground);
-            effGlow.parent := rCapture;
-            // TODO : changer les propriétés de l'effet selon les paramètres sur le projet
-          end;
-        TASSCGEffect.shadow:
-          begin
-            effShawdow := TShadowEffect.Create(rBackground);
-            effShawdow.parent := rCapture;
-            // TODO : changer les propriétés de l'effet selon les paramètres sur le projet
-          end;
-      else
-        raise exception.Create('Unknow effect type.');
-      end;
+    if assigned(ImgDestSize) then
+    begin
 
-      bmp := rBackground.makescreenshot;
+      // assemblage des composants
+      rBackground := trectangle.Create(self);
       try
-        case Device.ImageType of
-          TASSCGDBImageType.JPG:
-            bmp.SaveToFile(tpath.combine(SaveFolder, Bitmap.filename + '.jpg'));
-          TASSCGDBImageType.png:
-            bmp.SaveToFile(tpath.combine(SaveFolder, Bitmap.filename + '.png'));
+        rBackground.parent := self;
+        rBackground.stroke.Kind := tbrushkind.none;
+        rBackground.width := ImgDestSize.width;
+        rBackground.height := ImgDestSize.height;
+        case Background.Kind of
+          TASSCGFillKind.solid:
+            begin
+              rBackground.fill.Kind := tbrushkind.solid;
+              rBackground.fill.color := Background.color;
+            end;
+          TASSCGFillKind.BitmapTiled:
+            begin
+              rBackground.fill.Kind := tbrushkind.Bitmap;
+              rBackground.fill.Bitmap.WrapMode := twrapmode.Tile;
+              rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
+            end;
+          TASSCGFillKind.BitmapStretched:
+            begin
+              rBackground.fill.Kind := tbrushkind.Bitmap;
+              rBackground.fill.Bitmap.WrapMode := twrapmode.TileStretch;
+              rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
+            end;
+          TASSCGFillKind.BitmapCroped:
+            begin
+              // TODO : manage the "croped" value for background
+              rBackground.fill.Kind := tbrushkind.Bitmap;
+              rBackground.fill.Bitmap.WrapMode := twrapmode.TileOriginal;
+              rBackground.fill.Bitmap.Bitmap.Assign(Background.Bitmap);
+            end;
         else
-          raise exception.Create('Unknow file format for this device.');
+          raise exception.Create('Unknow background kind.');
+        end;
+
+        rCapture := trectangle.Create(rBackground);
+        rCapture.parent := rBackground;
+        rCapture.stroke.Kind := tbrushkind.none;
+        i := 0;
+        repeat
+          rCapture.width := orig_width - i;
+          rCapture.height := (orig_height * rCapture.width) / orig_width;
+          i := i + 20;
+        until (rCapture.width < rBackground.width) and
+          (rCapture.height < rBackground.height);
+        rCapture.position.x := (rBackground.width - rCapture.width) / 2;
+        rCapture.position.y := (rBackground.height - rCapture.height) / 2;
+        rCapture.fill.Kind := tbrushkind.Bitmap;
+        rCapture.fill.Bitmap.WrapMode := twrapmode.TileStretch;
+        rCapture.fill.Bitmap.Bitmap.Assign(Bitmap.Bitmap);
+
+        case Effect of
+          TASSCGEffect.none:
+            ;
+          TASSCGEffect.Glow:
+            begin
+              effGlow := TGlowEffect.Create(rBackground);
+              effGlow.parent := rCapture;
+              // TODO : changer les propriétés de l'effet selon les paramètres sur le projet
+            end;
+          TASSCGEffect.shadow:
+            begin
+              effShawdow := TShadowEffect.Create(rBackground);
+              effShawdow.parent := rCapture;
+              // TODO : changer les propriétés de l'effet selon les paramètres sur le projet
+            end;
+        else
+          raise exception.Create('Unknow effect type.');
+        end;
+
+        bmp := rBackground.makescreenshot;
+        try
+          case Device.ImageType of
+            TASSCGDBImageType.JPG:
+              bmp.SaveToFile(tpath.combine(SaveFolder,
+                Bitmap.filename + '.jpg'));
+            TASSCGDBImageType.png:
+              bmp.SaveToFile(tpath.combine(SaveFolder,
+                Bitmap.filename + '.png'));
+          else
+            raise exception.Create('Unknow file format for this device.');
+          end;
+        finally
+          bmp.free;
         end;
       finally
-        bmp.free;
+        rBackground.free;
       end;
-    finally
-      rBackground.free;
     end;
   end;
 end;
@@ -504,7 +554,6 @@ begin
   mnuAide.visible := false;
   mnuAideAPropos.parent := mnuSystemMacOS;
   mnuAideAPropos.text := 'A propos de ' + OlfAboutDialog1.Titre;
-  mnuOutils.visible := false;
   mnuOutilsOptions.parent := mnuSystemMacOS;
   mnuOutilsOptions.text := 'Réglages';
 
@@ -596,7 +645,7 @@ var
   Bitmap: TASSCGBitmap;
   i: integer;
 begin
-  if (DBStores.Count = 0) then
+  if (DBStores.count = 0) then
     raise exception.Create
       ('No stores database. Please wait a minute or reload them from "Tools" options.');
 
@@ -620,7 +669,7 @@ begin
     item.Tag := fk.Value;
     cbBackgroundKind.AddObject(item);
     if CurrentProject.Background.Kind = fk then
-      cbBackgroundKind.ItemIndex := cbBackgroundKind.Items.Count - 1;
+      cbBackgroundKind.ItemIndex := cbBackgroundKind.Items.count - 1;
   end;
 
   if assigned(CurrentProject.Background.Bitmap) and
@@ -877,7 +926,7 @@ begin
       o.free;
   end;
 
-  if DBStores.Count > 0 then
+  if DBStores.count > 0 then
     for Store in DBStores do
       with TCheckBox.Create(self) do
       begin
