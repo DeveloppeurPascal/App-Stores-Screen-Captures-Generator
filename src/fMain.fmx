@@ -80,7 +80,7 @@ object frmMain: TfrmMain
   object OlfAboutDialog1: TOlfAboutDialog
     Titre = 'App Stores Screen Captures Generator'
     VersionNumero = '1.0'
-    VersionDate = '20240114'
+    VersionDate = '20240129'
     MultiResBitmap = <
       item
       end>
