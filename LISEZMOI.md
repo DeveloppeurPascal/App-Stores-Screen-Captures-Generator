@@ -1,6 +1,6 @@
 # App Stores Screen Captures Generator
 
-[This page in english.](README.md)
+[This page in English.](README.md)
 
 Tout développeur de logiciel (utilitaires, jeux vidéo) pour ordinateurs classiques, smartphones, tablettes ou autres appareils a eu un jour l'obligation de faire des captures d'écran, de les mettre dans plusieurs formats (de fichiers ou de taille), pour les publier sur la fiche de son logiciel dans un ou plusieurs magasins d'applications.
 
@@ -16,19 +16,17 @@ Ce dépôt de code contient un projet développé en langage Pascal Objet sous D
 
 ## Utiliser ce logiciel
 
-**WIP : no executable available for now.**
-
 Ce logiciel est disponible dans une version de production directement installable ou exécutable. Il est distribué en shareware.
 
 Vous pouvez le télécharger et le rediffuser gratuitement à condition de ne pas en modifier le contenu (installeur, programme, fichiers annexes, ...).
 
-[Télécharger le programme ou son installeur](https://appstoresscreencapturesgenerator.olfsoftware.fr/)
+[Télécharger le programme ou son installeur](https://olfsoftware.lemonsqueezy.com/buy/2b9574e2-bd85-4b29-b4f9-853147095ede)
 
 Si vous utilisez régulièrement ce logiciel et en êtes satisfait vous êtes invité à en acheter une licence d'utilisateur final. L'achat d'une licence vous donnera accès aux mises à jour du logiciel en plus d'activer d'évenuelles fonctionnalités optionnelles.
 
-[Acheter une licence](FFF)
+[Acheter une licence](https://olfsoftware.lemonsqueezy.com/buy/f262b7ba-1d99-4e5c-b999-0531c9f3c213)
 
-Vous pouvez aussi [consulter le site du logiciel](EEE) pour en savoir plus sur son fonctionnement, accéder à des vidéos et articles, connaître les différentes versions disponibles et leurs fonctionnalités, contacter le support utilisateurs...
+Vous pouvez aussi [consulter le site du logiciel](https://appstoresscreencapturesgenerator.olfsoftware.fr/) pour en savoir plus sur son fonctionnement, accéder à des vidéos et articles, connaître les différentes versions disponibles et leurs fonctionnalités, contacter le support utilisateurs...
 
 ## Installation des codes sources
 
@@ -42,7 +40,7 @@ Ce projet utilise des dépendances sous forme de sous modules. Ils seront absent
 
 ## Licence d'utilisation de ce dépôt de code et de son contenu
 
-Ces codes sources sont distribués sous licence [AGPL 3.0 ou ultérieure] (https://choosealicense.com/licenses/agpl-3.0/).
+Ces codes sources sont distribués sous licence [AGPL 3.0 ou ultérieure](https://choosealicense.com/licenses/agpl-3.0/).
 
 Vous êtes globalement libre d'utiliser le contenu de ce dépôt de code n'importe où à condition :
 * d'en faire mention dans vos projets
