@@ -30,7 +30,7 @@ Vous pouvez le télécharger et le rediffuser gratuitement à condition de ne pa
 
 Si vous utilisez régulièrement ce logiciel et en êtes satisfait vous êtes invité à en acheter une licence d'utilisateur final. L'achat d'une licence vous donnera accès aux mises à jour du logiciel en plus d'activer d'évenuelles fonctionnalités optionnelles.
 
-[Acheter une licence](https://olfsoftware.lemonsqueezy.com/buy/f262b7ba-1d99-4e5c-b999-0531c9f3c213)
+[Acheter une licence](https://store.olfsoftware.fr/logiciels-pour-developpeurs-c-3/app-stores-screen-captures-generator-p-2)
 
 Vous pouvez aussi [consulter le site du logiciel](https://appstoresscreencapturesgenerator.olfsoftware.fr/) pour en savoir plus sur son fonctionnement, accéder à des vidéos et articles, connaître les différentes versions disponibles et leurs fonctionnalités, contacter le support utilisateurs...
 
